@@ -517,5 +517,4 @@ export {
   SidebarRail,
   SidebarInset,
   SidebarTrigger,
-  useSidebar,
 }
