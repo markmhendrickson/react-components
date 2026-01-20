@@ -1,13 +1,12 @@
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
-import { PanelLeft, type LucideIcon } from "lucide-react"
+import { PanelLeft } from "lucide-react"
 import { cn } from "../../lib/utils"
 
 // Constants
 const SIDEBAR_COOKIE_NAME = "sidebar_state"
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
 const SIDEBAR_WIDTH = "16rem"
-const SIDEBAR_WIDTH_MOBILE = "18rem"
 const SIDEBAR_KEYBOARD_SHORTCUT = "b"
 
 // Context types
@@ -455,7 +454,7 @@ SidebarRail.displayName = "SidebarRail"
 // SidebarInset
 const SidebarInset = React.forwardRef<HTMLElement, React.HTMLAttributes<HTMLElement>>(
   ({ className, ...props }, ref) => {
-    const { open, state, isMobile } = useSidebar()
+    const { open, isMobile } = useSidebar()
     return (
       <main
         ref={ref as React.Ref<HTMLElement>}
