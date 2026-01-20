@@ -18,7 +18,7 @@ interface BreadcrumbItem {
   isLast: boolean
 }
 
-interface LayoutProps {
+export interface LayoutProps {
   children: React.ReactNode
   siteName?: string
   menuItems?: MenuItem[]

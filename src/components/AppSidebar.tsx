@@ -19,7 +19,7 @@ export interface MenuItem {
   icon?: LucideIcon
 }
 
-interface AppSidebarProps {
+export interface AppSidebarProps {
   siteName: string
   menuItems?: MenuItem[]
 }

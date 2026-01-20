@@ -13,7 +13,7 @@ export { AppSidebar } from "./components/AppSidebar";
 export type { AppSidebarProps, MenuItem } from "./components/AppSidebar";
 
 // Error boundary
-export { ErrorBoundary } from "./components/ErrorBoundary";
+export { default as ErrorBoundary } from "./components/ErrorBoundary";
 
 // UI components
 export * from "./components/ui/breadcrumb";
