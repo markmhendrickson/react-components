@@ -215,7 +215,7 @@ export function Layout({
       <AppSidebar siteName={siteName || ''} menuItems={menuItems} />
       <SidebarInset className="min-w-0 max-w-full overflow-x-hidden">
         <PageHeader breadcrumbs={breadcrumbs} />
-        <main className="min-h-[calc(100vh-4rem)] p-4 md:p-6 min-w-0 max-w-full overflow-x-hidden">
+        <main className="min-h-[calc(100vh-4rem)] pt-[86px] p-4 md:p-6 min-w-0 max-w-full overflow-x-hidden">
           {children}
         </main>
       </SidebarInset>
