@@ -4,6 +4,7 @@
 
 @layer base {
   :root {
+    --header-height: 4rem; /* Page header height for viewport-height calcs; apps can override */
     --background: 0 0% 100%;              /* #FFFFFF - Pure white */
     --foreground: 222.2 84% 4.9%;
     --card: 210 20% 98%;                  /* #F9FAFB - Subtle gray */
@@ -71,5 +72,9 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+  /* Content area min-height: viewport minus header (use for pages inside layout) */
+  .min-h-content {
+    min-height: calc(100vh - var(--header-height, 4rem));
   }
 }

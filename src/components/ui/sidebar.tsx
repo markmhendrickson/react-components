@@ -89,9 +89,12 @@ const SidebarProvider: React.FC<SidebarProviderProps> = ({
     }
   }, [isMobile])
   
-  // Close sidebar on mobile when window resizes to mobile
+  // Close sidebar only when resizing from desktop to mobile (not when already on mobile and user opens)
+  const prevIsMobileRef = React.useRef(isMobile)
   React.useEffect(() => {
-    if (isMobile && open) {
+    const wasDesktopNowMobile = isMobile && !prevIsMobileRef.current
+    prevIsMobileRef.current = isMobile
+    if (wasDesktopNowMobile && open) {
       _setOpen(false)
     }
   }, [isMobile, open])

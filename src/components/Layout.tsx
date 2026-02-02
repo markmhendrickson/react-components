@@ -215,7 +215,7 @@ export function Layout({
       <AppSidebar siteName={siteName || ''} menuItems={menuItems} />
       <SidebarInset className="min-w-0 max-w-full overflow-x-hidden">
         <PageHeader breadcrumbs={breadcrumbs} />
-        <main className="min-h-[calc(100vh-4rem)] pt-[86px] p-4 md:p-6 min-w-0 max-w-full overflow-x-hidden">
+        <main className="min-h-[calc(100vh-var(--header-height,4rem))] pt-4 px-4 pb-4 md:pt-[var(--header-height,4rem)] md:px-6 md:pb-6 min-w-0 max-w-full overflow-x-hidden">
           {children}
         </main>
       </SidebarInset>
@@ -234,7 +234,7 @@ function PageHeader({ breadcrumbs }: PageHeaderProps) {
   const { open } = useSidebar()
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background px-4 min-w-0 max-w-full overflow-x-hidden">
+    <header className="sticky top-0 z-30 flex h-[var(--header-height,4rem)] items-center gap-4 border-b bg-background px-4 min-w-0 max-w-full overflow-x-hidden">
       {!open && <SidebarTrigger className="-ml-1 shrink-0" />}
       <Breadcrumb className="min-w-0 flex-1 overflow-hidden max-w-full">
         <BreadcrumbList className="flex-nowrap min-w-0 max-w-full">

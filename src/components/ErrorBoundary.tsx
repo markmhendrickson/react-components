@@ -32,8 +32,8 @@ class ErrorBoundary extends Component<Props, State> {
   render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-screen">
-          <div className="flex justify-center items-center min-h-screen py-20 px-8">
+        <div className="min-h-content">
+          <div className="flex justify-center items-center min-h-content py-20 px-8">
             <div className="max-w-[600px] w-full">
               <div className="flex items-center gap-3 mb-4">
                 <AlertCircle className="w-8 h-8 text-[#dc2626]" />
