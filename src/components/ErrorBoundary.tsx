@@ -45,7 +45,7 @@ class ErrorBoundary extends Component<Props, State> {
 
               <div className="text-[15px] leading-[1.75] font-light mb-8">
                 <p className="mb-6">We&apos;re sorry, but something unexpected happened. Please try refreshing the page or return to the home page.</p>
-                
+
                 {process.env.NODE_ENV === 'development' && this.state.error && (
                   <details className="mt-6 p-4 bg-[#f5f5f5] rounded-md border border-[#e0e0e0]">
                     <summary className="cursor-pointer text-[13px] font-medium text-[#666] mb-2">

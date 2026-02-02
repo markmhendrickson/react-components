@@ -29,9 +29,9 @@ export interface LayoutProps {
 /**
  * Configurable Layout component
  */
-export function Layout({ 
-  children, 
-  siteName, 
+export function Layout({
+  children,
+  siteName,
   menuItems = [],
   routeNames = {},
   getBreadcrumbLabel
@@ -49,11 +49,11 @@ export function Layout({
     if (previousPathname.current !== location.pathname) {
       const scrollY = window.scrollY
       scrollPositions.current.set(previousPathname.current, scrollY)
-      
+
       if (process.env.NODE_ENV === 'development') {
         console.log('[Scroll] Saved position for', previousPathname.current, ':', scrollY)
       }
-      
+
       // Update previous pathname after saving
       previousPathname.current = location.pathname
     }
@@ -65,7 +65,7 @@ export function Layout({
     const handleScroll = () => {
       // Don't save scroll position if we're in the middle of restoring
       if (isRestoringRef.current) return
-      
+
       clearTimeout(scrollTimeout)
       scrollTimeout = setTimeout(() => {
         scrollPositions.current.set(location.pathname, window.scrollY)
@@ -83,49 +83,49 @@ export function Layout({
   // Restore scroll position or scroll to top on route change
   useEffect(() => {
     const savedPosition = scrollPositions.current.get(location.pathname)
-    
+
     // Debug logging (remove in production)
     if (process.env.NODE_ENV === 'development') {
       console.log('[Scroll] Route changed:', location.pathname)
       console.log('[Scroll] Saved positions:', Array.from(scrollPositions.current.entries()))
       console.log('[Scroll] Saved position for this route:', savedPosition)
     }
-    
+
     if (savedPosition !== undefined && savedPosition > 0) {
       // Restore saved scroll position for previously visited pages
       isRestoringRef.current = true
-      
+
       if (process.env.NODE_ENV === 'development') {
         console.log('[Scroll] Restoring to position:', savedPosition)
       }
-      
+
       // Wait for content to render - use multiple strategies for reliability
       const restoreScroll = () => {
         // Try multiple times to ensure content is loaded
         let attempts = 0
         const maxAttempts = 10
-        
+
         const tryRestore = () => {
           attempts++
-          
+
           // Check if page has content (not just empty)
           const hasContent = document.body.scrollHeight > window.innerHeight
-          
+
           if (process.env.NODE_ENV === 'development' && attempts === 1) {
             console.log('[Scroll] Content check - scrollHeight:', document.body.scrollHeight, 'innerHeight:', window.innerHeight, 'hasContent:', hasContent)
           }
-          
+
           if (hasContent || attempts >= maxAttempts) {
             const actualPosition = Math.min(savedPosition, document.body.scrollHeight - window.innerHeight)
             window.scrollTo({
               top: actualPosition,
               behavior: 'auto'
             })
-            
+
             if (process.env.NODE_ENV === 'development') {
               console.log('[Scroll] Restored to position:', actualPosition, '(attempt', attempts + ')')
             }
-            
+
             // Allow scroll tracking after a brief delay
             setTimeout(() => {
               isRestoringRef.current = false
@@ -137,23 +137,23 @@ export function Layout({
             })
           }
         }
-        
+
         // Start restoration process
         requestAnimationFrame(() => {
           setTimeout(tryRestore, 0)
         })
       }
-      
+
       restoreScroll()
     } else {
       // Scroll to top for new pages
       if (process.env.NODE_ENV === 'development') {
         console.log('[Scroll] New page - scrolling to top')
       }
-      
+
       isRestoringRef.current = true
       window.scrollTo({ top: 0, behavior: 'auto' })
-      
+
       setTimeout(() => {
         isRestoringRef.current = false
       }, 100)

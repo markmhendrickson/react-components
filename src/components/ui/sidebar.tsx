@@ -27,12 +27,12 @@ interface SidebarProviderProps {
 // Context
 const SidebarContext = React.createContext<SidebarContextValue | undefined>(undefined)
 
-const SidebarProvider: React.FC<SidebarProviderProps> = ({ 
-  children, 
-  defaultOpen = true, 
+const SidebarProvider: React.FC<SidebarProviderProps> = ({
+  children,
+  defaultOpen = true,
   open: openProp,
   onOpenChange: setOpenProp,
-  ...props 
+  ...props
 }) => {
   // Default to closed on mobile, open on desktop
   const [isMobile, setIsMobile] = React.useState(false)
@@ -44,7 +44,7 @@ const SidebarProvider: React.FC<SidebarProviderProps> = ({
     window.addEventListener('resize', checkMobile)
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
-  
+
   const [open, _setOpen] = React.useState(isMobile ? false : defaultOpen)
 
   const setOpen = React.useCallback(
@@ -88,7 +88,7 @@ const SidebarProvider: React.FC<SidebarProviderProps> = ({
       }
     }
   }, [isMobile])
-  
+
   // Close sidebar only when resizing from desktop to mobile (not when already on mobile and user opens)
   const prevIsMobileRef = React.useRef(isMobile)
   React.useEffect(() => {
@@ -134,15 +134,15 @@ interface SidebarProps extends React.HTMLAttributes<HTMLElement> {
   collapsible?: "offcanvas" | "icon" | "none"
 }
 
-const Sidebar = React.forwardRef<HTMLElement, SidebarProps>(({ 
-  className, 
+const Sidebar = React.forwardRef<HTMLElement, SidebarProps>(({
+  className,
   side = "left",
   variant = "sidebar",
   collapsible = "offcanvas",
-  ...props 
+  ...props
 }, ref) => {
   const { open, state } = useSidebar()
-  
+
   return (
     <aside
       ref={ref as React.Ref<HTMLElement>}
