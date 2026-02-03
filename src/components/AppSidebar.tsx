@@ -47,7 +47,7 @@ export function AppSidebar({ siteName, menuItems = [] }: AppSidebarProps) {
     <Sidebar>
       <SidebarHeader>
         <div className="flex items-center gap-2 h-16 w-full">
-          {open && <SidebarTrigger />}
+          {open && <SidebarTrigger className="-ml-1" />}
           <Link to="/" onClick={handleLinkClick} className="flex items-center gap-3 flex-1">
             <span className="text-base font-medium">{siteName}</span>
           </Link>

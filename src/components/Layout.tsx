@@ -12,6 +12,14 @@ import {
 } from './ui/breadcrumb'
 import { cn } from '../lib/utils'
 
+const DEBUG_SCROLL = false
+
+function scrollLog(...args: unknown[]) {
+  if (DEBUG_SCROLL && process.env.NODE_ENV === 'development') {
+    console.log(...args)
+  }
+}
+
 interface BreadcrumbItem {
   label: string
   href: string
@@ -50,9 +58,7 @@ export function Layout({
       const scrollY = window.scrollY
       scrollPositions.current.set(previousPathname.current, scrollY)
 
-      if (process.env.NODE_ENV === 'development') {
-        console.log('[Scroll] Saved position for', previousPathname.current, ':', scrollY)
-      }
+      scrollLog('[Scroll] Saved position for', previousPathname.current, ':', scrollY)
 
       // Update previous pathname after saving
       previousPathname.current = location.pathname
@@ -84,20 +90,15 @@ export function Layout({
   useEffect(() => {
     const savedPosition = scrollPositions.current.get(location.pathname)
 
-    // Debug logging (remove in production)
-    if (process.env.NODE_ENV === 'development') {
-      console.log('[Scroll] Route changed:', location.pathname)
-      console.log('[Scroll] Saved positions:', Array.from(scrollPositions.current.entries()))
-      console.log('[Scroll] Saved position for this route:', savedPosition)
-    }
+    scrollLog('[Scroll] Route changed:', location.pathname)
+    scrollLog('[Scroll] Saved positions:', Array.from(scrollPositions.current.entries()))
+    scrollLog('[Scroll] Saved position for this route:', savedPosition)
 
     if (savedPosition !== undefined && savedPosition > 0) {
       // Restore saved scroll position for previously visited pages
       isRestoringRef.current = true
 
-      if (process.env.NODE_ENV === 'development') {
-        console.log('[Scroll] Restoring to position:', savedPosition)
-      }
+      scrollLog('[Scroll] Restoring to position:', savedPosition)
 
       // Wait for content to render - use multiple strategies for reliability
       const restoreScroll = () => {
@@ -111,8 +112,8 @@ export function Layout({
           // Check if page has content (not just empty)
           const hasContent = document.body.scrollHeight > window.innerHeight
 
-          if (process.env.NODE_ENV === 'development' && attempts === 1) {
-            console.log('[Scroll] Content check - scrollHeight:', document.body.scrollHeight, 'innerHeight:', window.innerHeight, 'hasContent:', hasContent)
+          if (attempts === 1) {
+            scrollLog('[Scroll] Content check - scrollHeight:', document.body.scrollHeight, 'innerHeight:', window.innerHeight, 'hasContent:', hasContent)
           }
 
           if (hasContent || attempts >= maxAttempts) {
@@ -122,9 +123,7 @@ export function Layout({
               behavior: 'auto'
             })
 
-            if (process.env.NODE_ENV === 'development') {
-              console.log('[Scroll] Restored to position:', actualPosition, '(attempt', attempts + ')')
-            }
+            scrollLog('[Scroll] Restored to position:', actualPosition, '(attempt', attempts + ')')
 
             // Allow scroll tracking after a brief delay
             setTimeout(() => {
@@ -146,10 +145,7 @@ export function Layout({
 
       restoreScroll()
     } else {
-      // Scroll to top for new pages
-      if (process.env.NODE_ENV === 'development') {
-        console.log('[Scroll] New page - scrolling to top')
-      }
+      scrollLog('[Scroll] New page - scrolling to top')
 
       isRestoringRef.current = true
       window.scrollTo({ top: 0, behavior: 'auto' })
@@ -231,11 +227,11 @@ interface PageHeaderProps {
 }
 
 function PageHeader({ breadcrumbs }: PageHeaderProps) {
-  const { open } = useSidebar()
+  const { open, isMobile } = useSidebar()
 
   return (
     <header className="sticky top-0 z-30 flex h-[var(--header-height,4rem)] items-center gap-4 border-b bg-background px-4 min-w-0 max-w-full overflow-x-hidden">
-      {!open && <SidebarTrigger className="-ml-1 shrink-0" />}
+      {(!open || isMobile) && <SidebarTrigger className="-ml-1 shrink-0" />}
       <Breadcrumb className="min-w-0 flex-1 overflow-hidden max-w-full">
         <BreadcrumbList className="flex-nowrap min-w-0 max-w-full">
           {breadcrumbs.map((crumb, index) => (
