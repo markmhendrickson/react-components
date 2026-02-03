@@ -34,18 +34,26 @@ const SidebarProvider: React.FC<SidebarProviderProps> = ({
   onOpenChange: setOpenProp,
   ...props
 }) => {
-  // Default to closed on mobile, open on desktop
-  const [isMobile, setIsMobile] = React.useState(false)
+  // Assume mobile (sidebar closed) until we measure, to avoid flash on mobile
+  const [isMobile, setIsMobile] = React.useState(true)
+  const [open, _setOpen] = React.useState(false)
+
   React.useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768)
+      const mobile = window.innerWidth < 768
+      setIsMobile(mobile)
+      if (!mobile) {
+        const cookieValue = document.cookie
+          .split("; ")
+          .find((row) => row.startsWith(`${SIDEBAR_COOKIE_NAME}=`))
+          ?.split("=")[1]
+        _setOpen(cookieValue === "true" || cookieValue === "false" ? cookieValue === "true" : defaultOpen)
+      }
     }
     checkMobile()
     window.addEventListener('resize', checkMobile)
     return () => window.removeEventListener('resize', checkMobile)
-  }, [])
-
-  const [open, _setOpen] = React.useState(isMobile ? false : defaultOpen)
+  }, [defaultOpen])
 
   const setOpen = React.useCallback(
     (value: boolean | ((prev: boolean) => boolean)) => {
@@ -76,18 +84,6 @@ const SidebarProvider: React.FC<SidebarProviderProps> = ({
     return () => window.removeEventListener("keydown", handleKeyDown)
   }, [setOpen])
 
-  // Read cookie on mount (only for desktop)
-  React.useEffect(() => {
-    if (!isMobile) {
-      const cookieValue = document.cookie
-        .split("; ")
-        .find((row) => row.startsWith(`${SIDEBAR_COOKIE_NAME}=`))
-        ?.split("=")[1]
-      if (cookieValue === "true" || cookieValue === "false") {
-        _setOpen(cookieValue === "true")
-      }
-    }
-  }, [isMobile])
 
   // Close sidebar only when resizing from desktop to mobile (not when already on mobile and user opens)
   const prevIsMobileRef = React.useRef(isMobile)
@@ -156,6 +152,9 @@ const Sidebar = React.forwardRef<HTMLElement, SidebarProps>(({
         variant === "floating" && "m-2 rounded-lg border",
         variant === "inset" && "border-0",
         collapsible === "offcanvas" && !open && (side === "left" ? "-translate-x-full" : "translate-x-full"),
+        // On mobile, hide by default with CSS so no flash before hydration; show only when expanded
+        collapsible === "offcanvas" && side === "left" && "max-md:-translate-x-full max-md:data-[state=expanded]:translate-x-0",
+        collapsible === "offcanvas" && side === "right" && "max-md:translate-x-full max-md:data-[state=expanded]:translate-x-0",
         collapsible === "icon" && !open ? "w-16" : "w-64",
         collapsible !== "icon" && open && "w-64",
         className
