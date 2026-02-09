@@ -53,7 +53,10 @@ export function AppSidebar({ siteName, menuItems = [] }: AppSidebarProps) {
           </Link>
         </div>
       </SidebarHeader>
-      <SidebarContent>
+      <SidebarContent
+        className="md:pb-4"
+        style={isMobile ? { paddingBottom: 'max(1.5rem, env(safe-area-inset-bottom, 1.5rem))' } : undefined}
+      >
         {/* Spacer on mobile pushes menu to bottom for thumb reachability */}
         <div className="flex-1 min-h-0 md:hidden" aria-hidden="true" />
         <SidebarGroup>
