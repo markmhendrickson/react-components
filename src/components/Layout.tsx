@@ -209,6 +209,7 @@ export function Layout({
   return (
     <SidebarProvider defaultOpen={true}>
       <AppSidebar siteName={siteName || ''} menuItems={menuItems} />
+      <MobileMenuFab />
       <SidebarInset className="min-w-0 max-w-full overflow-x-hidden">
         <PageHeader breadcrumbs={breadcrumbs} />
         <main className="min-h-[calc(100vh-var(--header-height,4rem))] pt-4 px-4 pb-4 md:pt-[var(--header-height,4rem)] md:px-6 md:pb-6 min-w-0 max-w-full overflow-x-hidden">
@@ -226,12 +227,32 @@ interface PageHeaderProps {
   breadcrumbs: BreadcrumbItem[]
 }
 
+/**
+ * Fixed menu button at bottom-right on mobile only. Opens sidebar from the right.
+ */
+function MobileMenuFab() {
+  const { isMobile } = useSidebar()
+  if (!isMobile) return null
+  return (
+    <div
+      className="fixed right-6 z-50 md:hidden"
+      style={{ bottom: 'max(1.5rem, env(safe-area-inset-bottom, 1.5rem))' }}
+    >
+      <SidebarTrigger
+        className="flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg hover:bg-primary focus-visible:ring-2 focus-visible:ring-ring"
+        aria-label="Open menu"
+      />
+    </div>
+  )
+}
+
 function PageHeader({ breadcrumbs }: PageHeaderProps) {
   const { open, isMobile } = useSidebar()
 
   return (
     <header className="sticky top-0 z-30 flex h-[var(--header-height,4rem)] items-center gap-4 border-b bg-background px-4 min-w-0 max-w-full overflow-x-hidden">
-      {(!open || isMobile) && <SidebarTrigger className="-ml-1 shrink-0" />}
+      {/* Desktop: show trigger in header when sidebar is closed; mobile uses fixed FAB */}
+      {!isMobile && !open && <SidebarTrigger className="-ml-1 shrink-0" />}
       <Breadcrumb className="min-w-0 flex-1 overflow-hidden max-w-full">
         <BreadcrumbList className="flex-nowrap min-w-0 max-w-full">
           {breadcrumbs.map((crumb, index) => (

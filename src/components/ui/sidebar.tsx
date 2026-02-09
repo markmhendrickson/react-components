@@ -147,8 +147,8 @@ const Sidebar = React.forwardRef<HTMLElement, SidebarProps>(({
       data-variant={variant}
       data-collapsible={collapsible}
       className={cn(
-        "group/sidebar fixed inset-y-0 z-40 flex h-screen flex-col gap-2 border-r border-sidebar-border bg-sidebar text-sidebar-foreground transition-[width,transform] duration-200 ease-linear",
-        side === "left" ? "left-0" : "right-0",
+        "group/sidebar fixed inset-y-0 z-40 flex h-screen flex-col gap-2 border-sidebar-border bg-sidebar text-sidebar-foreground transition-[width,transform] duration-200 ease-linear",
+        side === "left" ? "left-0 border-r" : "right-0 border-l",
         variant === "floating" && "m-2 rounded-lg border",
         variant === "inset" && "border-0",
         collapsible === "offcanvas" && !open && (side === "left" ? "-translate-x-full" : "translate-x-full"),
@@ -279,7 +279,7 @@ const SidebarMenu = React.forwardRef<HTMLUListElement, React.HTMLAttributes<HTML
   ({ className, ...props }, ref) => (
     <ul
       ref={ref}
-      className={cn("flex w-full min-w-0 flex-col gap-1 list-none", className)}
+      className={cn("flex w-full min-w-0 flex-col gap-2 md:gap-1 list-none", className)}
       {...props}
     />
   )
@@ -312,7 +312,7 @@ const SidebarMenuButton = React.forwardRef<HTMLButtonElement, SidebarMenuButtonP
         ref={ref}
         data-active={isActive}
         className={cn(
-          "peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-md p-2 text-left text-sm outline-none ring-sidebar-ring transition-[width,height,padding] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 focus-visible:ring-sidebar-ring active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 group-has-[[data-side=left]]/sidebar-item:pr-2 group-has-[[data-side=right]]/sidebar-item:pl-2 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-sidebar-accent data-[active=true]:font-medium data-[active=true]:text-sidebar-accent-foreground data-[state=open]:hover:bg-sidebar-accent data-[state=open]:hover:text-sidebar-accent-foreground",
+          "peer/menu-button flex w-full items-center gap-3 overflow-hidden rounded-md p-3 text-left text-base min-h-[44px] outline-none ring-sidebar-ring transition-[width,height,padding] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 focus-visible:ring-sidebar-ring active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 group-has-[[data-side=left]]/sidebar-item:pr-2 group-has-[[data-side=right]]/sidebar-item:pl-2 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-sidebar-accent data-[active=true]:font-medium data-[active=true]:text-sidebar-accent-foreground data-[state=open]:hover:bg-sidebar-accent data-[state=open]:hover:text-sidebar-accent-foreground md:gap-2 md:p-2 md:text-sm md:min-h-0",
           className
         )}
         {...props}
@@ -412,7 +412,7 @@ const SidebarMenuSubButton = React.forwardRef<HTMLAnchorElement, SidebarMenuSubB
       <Comp
         ref={ref}
         className={cn(
-          "flex min-w-0 -indent-3 items-center gap-2 rounded-md p-2 pl-7 text-sidebar-foreground outline-none ring-sidebar-ring transition-[width,height,padding] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 focus-visible:ring-sidebar-ring active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50",
+          "flex min-w-0 -indent-3 items-center gap-2 rounded-md p-3 pl-8 min-h-[44px] text-sidebar-foreground outline-none ring-sidebar-ring transition-[width,height,padding] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 focus-visible:ring-sidebar-ring active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 md:p-2 md:pl-7 md:min-h-0",
           className
         )}
         {...props}
@@ -482,12 +482,12 @@ const SidebarTrigger = React.forwardRef<HTMLButtonElement, React.ButtonHTMLAttri
         ref={ref}
         onClick={toggleSidebar}
         className={cn(
-          "inline-flex items-center justify-center rounded-md p-2 text-sm font-medium outline-none ring-sidebar-ring transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 focus-visible:ring-sidebar-ring disabled:pointer-events-none disabled:opacity-50",
+          "inline-flex items-center justify-center rounded-md p-3 min-h-[44px] min-w-[44px] text-sm font-medium outline-none ring-sidebar-ring transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 focus-visible:ring-sidebar-ring disabled:pointer-events-none disabled:opacity-50 md:p-2 md:min-h-0 md:min-w-0",
           className
         )}
         {...props}
       >
-        <PanelLeft className="size-4" />
+        <PanelLeft className="size-5 md:size-4" />
         <span className="sr-only">Toggle sidebar</span>
       </button>
     )
