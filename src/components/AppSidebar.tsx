@@ -23,8 +23,11 @@ export interface AppSidebarProps {
   menuItems?: MenuItem[]
 }
 
+const MOBILE_NAV_BOTTOM = 'max(1.5rem, env(safe-area-inset-bottom, 1.5rem))'
+
 /**
- * Configurable AppSidebar component
+ * Configurable AppSidebar component.
+ * On mobile, nav items are in a bar at the bottom of the sidebar panel (above browser chrome); it slides in/out with the sidebar.
  */
 export function AppSidebar({ siteName, menuItems = [] }: AppSidebarProps) {
   const location = useLocation()
@@ -43,6 +46,26 @@ export function AppSidebar({ siteName, menuItems = [] }: AppSidebarProps) {
     }
   }
 
+  const menuContent = (
+    <SidebarGroup>
+      <SidebarGroupContent>
+        {menuItems.map((item) => {
+          const Icon = item.icon
+          return (
+            <SidebarMenuItem key={item.path}>
+              <SidebarMenuButton asChild isActive={isActive(item.path)}>
+                <Link to={item.path} onClick={handleLinkClick}>
+                  {Icon && <Icon className="size-5 shrink-0 md:size-4" />}
+                  <span>{item.label}</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          )
+        })}
+      </SidebarGroupContent>
+    </SidebarGroup>
+  )
+
   return (
     <Sidebar side={isMobile ? 'right' : 'left'}>
       <SidebarHeader>
@@ -53,30 +76,21 @@ export function AppSidebar({ siteName, menuItems = [] }: AppSidebarProps) {
           </Link>
         </div>
       </SidebarHeader>
-      <SidebarContent
-        className="md:pb-4"
-        style={isMobile ? { paddingBottom: 'max(1.5rem, env(safe-area-inset-bottom, 1.5rem))' } : undefined}
-      >
-        {/* Spacer on mobile pushes menu to bottom for thumb reachability */}
-        <div className="flex-1 min-h-0 md:hidden" aria-hidden="true" />
-        <SidebarGroup>
-          <SidebarGroupContent>
-            {menuItems.map((item) => {
-              const Icon = item.icon
-              return (
-                <SidebarMenuItem key={item.path}>
-                  <SidebarMenuButton asChild isActive={isActive(item.path)}>
-                    <Link to={item.path} onClick={handleLinkClick}>
-                      {Icon && <Icon className="size-5 shrink-0 md:size-4" />}
-                      <span>{item.label}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              )
-            })}
-          </SidebarGroupContent>
-        </SidebarGroup>
+      <SidebarContent className="md:pb-4">
+        {isMobile ? (
+          <div className="flex-1 min-h-0" aria-hidden="true" />
+        ) : (
+          menuContent
+        )}
       </SidebarContent>
+      {isMobile && (
+        <div
+          className="absolute inset-x-0 flex flex-col gap-2 border-t border-sidebar-border bg-sidebar px-2 py-4 text-sidebar-foreground md:hidden"
+          style={{ bottom: MOBILE_NAV_BOTTOM }}
+        >
+          {menuContent}
+        </div>
+      )}
     </Sidebar>
   )
 }
