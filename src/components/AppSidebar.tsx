@@ -23,8 +23,8 @@ export interface AppSidebarProps {
   menuItems?: MenuItem[]
 }
 
-/** Bottom inset so nav clears browser chrome. Chrome on iOS often reports 0 safe-area; use a minimum that clears its URL bar and keeps last item (e.g. Links) visible (~6rem). */
-const MOBILE_NAV_BOTTOM = 'max(6rem, 1.5rem, env(safe-area-inset-bottom, 0px))'
+/** Bottom inset so nav clears browser chrome. Chrome on iOS often reports 0 safe-area; use a minimum that clears its URL bar and keeps last item (e.g. Links) visible (~5.75rem). */
+const MOBILE_NAV_BOTTOM = 'max(5.75rem, 1.5rem, env(safe-area-inset-bottom, 0px))'
 
 /**
  * Configurable AppSidebar component.
@@ -56,7 +56,11 @@ export function AppSidebar({ siteName, menuItems = [] }: AppSidebarProps) {
             <SidebarMenuItem key={item.path}>
               <SidebarMenuButton asChild isActive={isActive(item.path)}>
                 <Link to={item.path} onClick={handleLinkClick}>
-                  {Icon && <Icon className="size-5 shrink-0 md:size-4" />}
+                  {Icon && (
+                    <span className="flex shrink-0 text-sidebar-foreground [&>svg]:size-5 [&>svg]:fill-none [&>svg]:stroke-current md:[&>svg]:size-4">
+                      <Icon aria-hidden />
+                    </span>
+                  )}
                   <span>{item.label}</span>
                 </Link>
               </SidebarMenuButton>

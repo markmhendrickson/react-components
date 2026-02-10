@@ -312,7 +312,7 @@ const SidebarMenuButton = React.forwardRef<HTMLButtonElement, SidebarMenuButtonP
         ref={ref}
         data-active={isActive}
         className={cn(
-          "peer/menu-button flex w-full items-center gap-3 overflow-hidden rounded-md p-3 text-left text-base min-h-[44px] outline-none ring-sidebar-ring transition-[width,height,padding] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 focus-visible:ring-sidebar-ring active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 group-has-[[data-side=left]]/sidebar-item:pr-2 group-has-[[data-side=right]]/sidebar-item:pl-2 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-sidebar-accent data-[active=true]:font-medium data-[active=true]:text-sidebar-accent-foreground data-[state=open]:hover:bg-sidebar-accent data-[state=open]:hover:text-sidebar-accent-foreground md:gap-2 md:p-2 md:text-sm md:min-h-0",
+          "peer/menu-button flex w-full items-center gap-3 overflow-hidden rounded-md p-3 text-left text-base min-h-[44px] outline-none ring-sidebar-ring transition-[width,height,padding] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 focus-visible:ring-sidebar-ring active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 group-has-[[data-side=left]]/sidebar-item:pr-2 group-has-[[data-side=right]]/sidebar-item:pl-2 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-sidebar-accent data-[active=true]:font-medium data-[active=true]:text-sidebar-accent-foreground data-[state=open]:hover:bg-sidebar-accent data-[state=open]:hover:text-sidebar-accent-foreground md:gap-2 md:p-2 md:text-sm md:min-h-0 [-webkit-tap-highlight-color:transparent] [tap-highlight-color:transparent]",
           className
         )}
         {...props}
@@ -482,7 +482,7 @@ const SidebarTrigger = React.forwardRef<HTMLButtonElement, React.ButtonHTMLAttri
         ref={ref}
         onClick={toggleSidebar}
         className={cn(
-          "inline-flex items-center justify-center rounded-md p-3 min-h-[44px] min-w-[44px] text-sm font-medium outline-none ring-sidebar-ring transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 focus-visible:ring-sidebar-ring disabled:pointer-events-none disabled:opacity-50 md:p-2 md:min-h-0 md:min-w-0",
+          "inline-flex items-center justify-center rounded-md p-3 min-h-[44px] min-w-[44px] text-sm font-medium outline-none ring-sidebar-ring transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 focus-visible:ring-sidebar-ring disabled:pointer-events-none disabled:opacity-50 md:p-2 md:min-h-0 md:min-w-0 [-webkit-tap-highlight-color:transparent] [tap-highlight-color:transparent] [&>svg]:fill-none [&>svg]:stroke-current",
           className
         )}
         {...props}

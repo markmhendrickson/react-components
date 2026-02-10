@@ -46,7 +46,8 @@ export function Layout({
 }: LayoutProps) {
   const location = useLocation()
   const params = useParams()
-  const [dynamicLabel, setDynamicLabel] = useState<string | null>(null)
+  // Compute during render so breadcrumb shows correct label (e.g. sentence-case post title) on first paint
+  const dynamicLabel = getBreadcrumbLabel ? getBreadcrumbLabel(location.pathname, params) : null
   const scrollPositions = useRef(new Map<string, number>())
   const previousPathname = useRef(location.pathname)
   const isRestoringRef = useRef(false)
@@ -156,16 +157,6 @@ export function Layout({
     }
   }, [location.pathname])
 
-  // Load dynamic label if getBreadcrumbLabel function is provided
-  useEffect(() => {
-    if (getBreadcrumbLabel) {
-      const label = getBreadcrumbLabel(location.pathname, params)
-      setDynamicLabel(label)
-    } else {
-      setDynamicLabel(null)
-    }
-  }, [location.pathname, params, getBreadcrumbLabel])
-
   // Generate breadcrumb items from pathname
   const getBreadcrumbs = (): BreadcrumbItem[] => {
     const pathnames = location.pathname.split('/').filter((x) => x)
@@ -229,7 +220,7 @@ interface PageHeaderProps {
 
 /**
  * Fixed menu button at bottom-right on mobile only. Opens sidebar from the right.
- * Bottom inset uses 6rem minimum so Chrome on iOS (which often reports 0 safe-area) doesn't cover the FAB or nav.
+ * Bottom inset matches right (1.5rem / right-6) for equal corner spacing; respects safe-area when set.
  */
 function MobileMenuFab() {
   const { isMobile } = useSidebar()
@@ -237,10 +228,10 @@ function MobileMenuFab() {
   return (
     <div
       className="fixed right-6 z-50 md:hidden"
-      style={{ bottom: 'max(6rem, 1.5rem, env(safe-area-inset-bottom, 0px))' }}
+      style={{ bottom: 'max(1.5rem, env(safe-area-inset-bottom, 0px))' }}
     >
       <SidebarTrigger
-        className="flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg hover:bg-primary focus-visible:ring-2 focus-visible:ring-ring"
+        className="flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg hover:!bg-primary hover:!text-primary-foreground active:!bg-primary active:!text-primary-foreground focus-visible:ring-2 focus-visible:ring-ring"
         aria-label="Open menu"
       />
     </div>
