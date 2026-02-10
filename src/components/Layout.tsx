@@ -229,7 +229,7 @@ interface PageHeaderProps {
 
 /**
  * Fixed menu button at bottom-right on mobile only. Opens sidebar from the right.
- * Bottom inset uses 5.5rem minimum so Chrome on iOS (which often reports 0 safe-area) doesn't cover the FAB.
+ * Bottom inset uses 6rem minimum so Chrome on iOS (which often reports 0 safe-area) doesn't cover the FAB or nav.
  */
 function MobileMenuFab() {
   const { isMobile } = useSidebar()
@@ -237,7 +237,7 @@ function MobileMenuFab() {
   return (
     <div
       className="fixed right-6 z-50 md:hidden"
-      style={{ bottom: 'max(5.5rem, 1.5rem, env(safe-area-inset-bottom, 0px))' }}
+      style={{ bottom: 'max(6rem, 1.5rem, env(safe-area-inset-bottom, 0px))' }}
     >
       <SidebarTrigger
         className="flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg hover:bg-primary focus-visible:ring-2 focus-visible:ring-ring"
