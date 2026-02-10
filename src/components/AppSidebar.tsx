@@ -23,7 +23,8 @@ export interface AppSidebarProps {
   menuItems?: MenuItem[]
 }
 
-const MOBILE_NAV_BOTTOM = 'max(1.5rem, env(safe-area-inset-bottom, 1.5rem))'
+/** Bottom inset so nav clears browser chrome. Chrome on iOS often reports 0 safe-area; use a minimum that clears its URL bar (~5.5rem). */
+const MOBILE_NAV_BOTTOM = 'max(5.5rem, 1.5rem, env(safe-area-inset-bottom, 0px))'
 
 /**
  * Configurable AppSidebar component.
