@@ -21,6 +21,8 @@ export interface MenuItem {
 export interface AppSidebarProps {
   siteName: string
   menuItems?: MenuItem[]
+  /** Optional content rendered below the menu (e.g. search) */
+  extraContent?: React.ReactNode
 }
 
 /** Bottom inset so nav clears browser chrome. Chrome on iOS often reports 0 safe-area; use a minimum that clears its URL bar and keeps last item (e.g. Links) visible (~5.75rem). */
@@ -30,7 +32,7 @@ const MOBILE_NAV_BOTTOM = 'max(5.75rem, 1.5rem, env(safe-area-inset-bottom, 0px)
  * Configurable AppSidebar component.
  * On mobile, nav items are in a bar at the bottom of the sidebar panel (above browser chrome); it slides in/out with the sidebar.
  */
-export function AppSidebar({ siteName, menuItems = [] }: AppSidebarProps) {
+export function AppSidebar({ siteName, menuItems = [], extraContent }: AppSidebarProps) {
   const location = useLocation()
   const { isMobile, setOpen, open } = useSidebar()
 
@@ -83,9 +85,23 @@ export function AppSidebar({ siteName, menuItems = [] }: AppSidebarProps) {
       </SidebarHeader>
       <SidebarContent className="md:pb-4">
         {isMobile ? (
-          <div className="flex-1 min-h-0" aria-hidden="true" />
+          <>
+            {extraContent != null && (
+              <SidebarGroup>
+                <SidebarGroupContent>{extraContent}</SidebarGroupContent>
+              </SidebarGroup>
+            )}
+            <div className="flex-1 min-h-0" aria-hidden="true" />
+          </>
         ) : (
-          menuContent
+          <>
+            {menuContent}
+            {extraContent != null && (
+              <SidebarGroup>
+                <SidebarGroupContent>{extraContent}</SidebarGroupContent>
+              </SidebarGroup>
+            )}
+          </>
         )}
       </SidebarContent>
       {isMobile && (

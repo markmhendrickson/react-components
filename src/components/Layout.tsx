@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useLocation, Link, useParams, type Params } from 'react-router-dom'
-import { SidebarProvider, SidebarInset, SidebarTrigger, useSidebar } from './ui/sidebar'
+import { SidebarProvider, SidebarInset, SidebarTrigger, SidebarOverlay, useSidebar } from './ui/sidebar'
 import { AppSidebar, type MenuItem } from './AppSidebar'
 import {
   Breadcrumb,
@@ -32,6 +32,10 @@ export interface LayoutProps {
   menuItems?: MenuItem[]
   routeNames?: Record<string, string>
   getBreadcrumbLabel?: (pathname: string, params: Params) => string | null
+  /** Optional content rendered on the right side of the page header (e.g. search) */
+  headerRight?: React.ReactNode
+  /** Optional content rendered in the sidebar below the menu (e.g. search) */
+  sidebarExtra?: React.ReactNode
 }
 
 /**
@@ -42,7 +46,9 @@ export function Layout({
   siteName,
   menuItems = [],
   routeNames = {},
-  getBreadcrumbLabel
+  getBreadcrumbLabel,
+  headerRight,
+  sidebarExtra
 }: LayoutProps) {
   const location = useLocation()
   const params = useParams()
@@ -58,9 +64,7 @@ export function Layout({
     if (previousPathname.current !== location.pathname) {
       const scrollY = window.scrollY
       scrollPositions.current.set(previousPathname.current, scrollY)
-
       scrollLog('[Scroll] Saved position for', previousPathname.current, ':', scrollY)
-
       // Update previous pathname after saving
       previousPathname.current = location.pathname
     }
@@ -90,7 +94,6 @@ export function Layout({
   // Restore scroll position or scroll to top on route change
   useEffect(() => {
     const savedPosition = scrollPositions.current.get(location.pathname)
-
     scrollLog('[Scroll] Route changed:', location.pathname)
     scrollLog('[Scroll] Saved positions:', Array.from(scrollPositions.current.entries()))
     scrollLog('[Scroll] Saved position for this route:', savedPosition)
@@ -100,7 +103,6 @@ export function Layout({
       isRestoringRef.current = true
 
       scrollLog('[Scroll] Restoring to position:', savedPosition)
-
       // Wait for content to render - use multiple strategies for reliability
       const restoreScroll = () => {
         // Try multiple times to ensure content is loaded
@@ -112,20 +114,16 @@ export function Layout({
 
           // Check if page has content (not just empty)
           const hasContent = document.body.scrollHeight > window.innerHeight
-
           if (attempts === 1) {
             scrollLog('[Scroll] Content check - scrollHeight:', document.body.scrollHeight, 'innerHeight:', window.innerHeight, 'hasContent:', hasContent)
           }
-
           if (hasContent || attempts >= maxAttempts) {
             const actualPosition = Math.min(savedPosition, document.body.scrollHeight - window.innerHeight)
             window.scrollTo({
               top: actualPosition,
               behavior: 'auto'
             })
-
             scrollLog('[Scroll] Restored to position:', actualPosition, '(attempt', attempts + ')')
-
             // Allow scroll tracking after a brief delay
             setTimeout(() => {
               isRestoringRef.current = false
@@ -147,7 +145,6 @@ export function Layout({
       restoreScroll()
     } else {
       scrollLog('[Scroll] New page - scrolling to top')
-
       isRestoringRef.current = true
       window.scrollTo({ top: 0, behavior: 'auto' })
 
@@ -199,13 +196,13 @@ export function Layout({
 
   return (
     <SidebarProvider defaultOpen={true}>
-      <AppSidebar siteName={siteName || ''} menuItems={menuItems} />
-      <MobileMenuFab />
+      <AppSidebar siteName={siteName || ''} menuItems={menuItems} extraContent={sidebarExtra} />
+      <SidebarOverlay />
       <SidebarInset className="min-w-0 max-w-full overflow-x-hidden">
-        <PageHeader breadcrumbs={breadcrumbs} />
-        <main className="min-h-[calc(100vh-var(--header-height,4rem))] pt-4 px-4 pb-4 md:pt-[var(--header-height,4rem)] md:px-6 md:pb-6 min-w-0 max-w-full overflow-x-hidden">
+        <PageHeader breadcrumbs={breadcrumbs} headerRight={headerRight} />
+        <div className="min-h-[calc(100vh-4rem)] p-4 md:p-6 min-w-0 max-w-full overflow-x-hidden">
           {children}
-        </main>
+        </div>
       </SidebarInset>
     </SidebarProvider>
   )
@@ -216,35 +213,15 @@ export function Layout({
  */
 interface PageHeaderProps {
   breadcrumbs: BreadcrumbItem[]
+  headerRight?: React.ReactNode
 }
 
-/**
- * Fixed menu button at bottom-right on mobile only. Opens sidebar from the right.
- * Bottom inset matches right (1.5rem / right-6) for equal corner spacing; respects safe-area when set.
- */
-function MobileMenuFab() {
-  const { isMobile } = useSidebar()
-  if (!isMobile) return null
-  return (
-    <div
-      className="fixed right-6 z-50 md:hidden"
-      style={{ bottom: 'max(1.5rem, env(safe-area-inset-bottom, 0px))' }}
-    >
-      <SidebarTrigger
-        className="flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg hover:!bg-primary hover:!text-primary-foreground active:!bg-primary active:!text-primary-foreground focus-visible:ring-2 focus-visible:ring-ring"
-        aria-label="Open menu"
-      />
-    </div>
-  )
-}
-
-function PageHeader({ breadcrumbs }: PageHeaderProps) {
+function PageHeader({ breadcrumbs, headerRight }: PageHeaderProps) {
   const { open, isMobile } = useSidebar()
 
   return (
-    <header className="sticky top-0 z-30 flex h-[var(--header-height,4rem)] items-center gap-4 border-b bg-background px-4 min-w-0 max-w-full overflow-x-hidden">
-      {/* Desktop: show trigger in header when sidebar is closed; mobile uses fixed FAB */}
-      {!isMobile && !open && <SidebarTrigger className="-ml-1 shrink-0" />}
+    <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background px-4 min-w-0 max-w-full overflow-x-hidden">
+      {(!open || isMobile) && <SidebarTrigger className="-ml-1 shrink-0" aria-label="Open menu" />}
       <Breadcrumb className="min-w-0 flex-1 overflow-hidden max-w-full">
         <BreadcrumbList className="flex-nowrap min-w-0 max-w-full">
           {breadcrumbs.map((crumb, index) => (
@@ -266,6 +243,11 @@ function PageHeader({ breadcrumbs }: PageHeaderProps) {
           ))}
         </BreadcrumbList>
       </Breadcrumb>
+      {headerRight != null && (
+        <div className="ml-auto shrink-0 flex items-center">
+          {headerRight}
+        </div>
+      )}
     </header>
   )
 }

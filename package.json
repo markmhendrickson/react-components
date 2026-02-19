@@ -61,6 +61,8 @@
     "eslint": "^8.0.0",
     "eslint-plugin-react": "^7.33.0",
     "eslint-plugin-react-hooks": "^4.6.0",
+    "lucide-react": "^0.400.0",
+    "react-router-dom": "^6.30.3",
     "typescript": "^5.0.0"
   },
   "dependencies": {

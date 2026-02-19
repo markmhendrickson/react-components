@@ -87,6 +87,15 @@ import { Breadcrumb, BreadcrumbList } from "@shared";
 import { Layout, AppSidebar } from "@markmhendrickson/react-components";
 ```
 
+## Single React Instance (Path Alias / SSR)
+
+When the shared package is consumed via a **path alias** (e.g. `@shared` → `../../shared/src`), do **not** run `npm install` inside the shared directory. React, react-dom, and react-router-dom must be provided by the consuming app so there is only one copy. Otherwise you get "Cannot read properties of null (reading 'useContext')" or "Invalid hook call" in SSR or dev.
+
+- **Correct:** Install only in the app (`react-app/`). Shared code resolves `react` from the app's `node_modules`.
+- **Wrong:** Running `npm install` in `shared/` creates `shared/node_modules/react`; the app then uses app's React while shared uses shared's React → duplicate React, broken hooks/context.
+
+If you already ran `npm install` in shared, remove `shared/node_modules` (and optionally `shared/package-lock.json` if you want to avoid reinstalling there). The app's Vite config uses `resolve.dedupe` for react, react-dom, and react-router-dom.
+
 ## Development Workflow
 
 1. **Make changes in react-components:**

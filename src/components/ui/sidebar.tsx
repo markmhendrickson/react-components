@@ -27,6 +27,7 @@ interface SidebarProviderProps {
 // Context
 const SidebarContext = React.createContext<SidebarContextValue | undefined>(undefined)
 
+const MOBILE_BREAKPOINT = 768
 const SidebarProvider: React.FC<SidebarProviderProps> = ({
   children,
   defaultOpen = true,
@@ -35,24 +36,30 @@ const SidebarProvider: React.FC<SidebarProviderProps> = ({
   ...props
 }) => {
   // Assume mobile (sidebar closed) until we measure, to avoid flash on mobile
+  const [mounted, setMounted] = React.useState(false)
   const [isMobile, setIsMobile] = React.useState(true)
   const [open, _setOpen] = React.useState(false)
-
+  const prevIsMobileRef = React.useRef(false)
   React.useEffect(() => {
+    setMounted(true)
     const checkMobile = () => {
-      const mobile = window.innerWidth < 768
+      const mobile = typeof window !== "undefined" && window.innerWidth < MOBILE_BREAKPOINT
       setIsMobile(mobile)
       if (!mobile) {
-        const cookieValue = document.cookie
-          .split("; ")
-          .find((row) => row.startsWith(`${SIDEBAR_COOKIE_NAME}=`))
-          ?.split("=")[1]
-        _setOpen(cookieValue === "true" || cookieValue === "false" ? cookieValue === "true" : defaultOpen)
+        try {
+          const cookieValue = document.cookie
+            .split("; ")
+            .find((row) => row.startsWith(`${SIDEBAR_COOKIE_NAME}=`))
+            ?.split("=")[1]
+          _setOpen(cookieValue === "true" || cookieValue === "false" ? cookieValue === "true" : defaultOpen)
+        } catch {
+          _setOpen(defaultOpen)
+        }
       }
     }
     checkMobile()
-    window.addEventListener('resize', checkMobile)
-    return () => window.removeEventListener('resize', checkMobile)
+    window.addEventListener("resize", checkMobile)
+    return () => window.removeEventListener("resize", checkMobile)
   }, [defaultOpen])
 
   const setOpen = React.useCallback(
@@ -63,8 +70,12 @@ const SidebarProvider: React.FC<SidebarProviderProps> = ({
       } else {
         _setOpen(openState)
       }
-      // Persist to cookie
-      document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`
+      // Persist to cookie (guard: storage/cookies may be blocked in some contexts)
+      try {
+        document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`
+      } catch {
+        // ignore
+      }
     },
     [setOpenProp, open]
   )
@@ -84,16 +95,13 @@ const SidebarProvider: React.FC<SidebarProviderProps> = ({
     return () => window.removeEventListener("keydown", handleKeyDown)
   }, [setOpen])
 
-
-  // Close sidebar only when resizing from desktop to mobile (not when already on mobile and user opens)
-  const prevIsMobileRef = React.useRef(isMobile)
+  // Close sidebar only when resizing from desktop to mobile (not when already on mobile and opening)
   React.useEffect(() => {
-    const wasDesktopNowMobile = isMobile && !prevIsMobileRef.current
-    prevIsMobileRef.current = isMobile
-    if (wasDesktopNowMobile && open) {
+    if (mounted && isMobile && !prevIsMobileRef.current && open) {
       _setOpen(false)
     }
-  }, [isMobile, open])
+    prevIsMobileRef.current = isMobile
+  }, [mounted, isMobile, open])
 
   const value = React.useMemo(
     () => ({
@@ -137,7 +145,8 @@ const Sidebar = React.forwardRef<HTMLElement, SidebarProps>(({
   collapsible = "offcanvas",
   ...props
 }, ref) => {
-  const { open, state } = useSidebar()
+  const { open, state, isMobile } = useSidebar()
+  const widthWhenOpen = collapsible === "offcanvas" && isMobile ? "w-full max-w-[85vw]" : "w-64"
 
   return (
     <aside
@@ -155,14 +164,14 @@ const Sidebar = React.forwardRef<HTMLElement, SidebarProps>(({
         // On mobile, hide by default with CSS so no flash before hydration; show only when expanded
         collapsible === "offcanvas" && side === "left" && "max-md:-translate-x-full max-md:data-[state=expanded]:translate-x-0",
         collapsible === "offcanvas" && side === "right" && "max-md:translate-x-full max-md:data-[state=expanded]:translate-x-0",
-        collapsible === "icon" && !open ? "w-16" : "w-64",
-        collapsible !== "icon" && open && "w-64",
+        collapsible === "icon" && !open ? "w-16" : widthWhenOpen,
+        collapsible !== "icon" && open && widthWhenOpen,
         className
       )}
       style={{
         "--sidebar-width": SIDEBAR_WIDTH,
         "--sidebar-width-icon": "3rem",
-        width: collapsible === "icon" && !open ? "3rem" : SIDEBAR_WIDTH,
+        ...(collapsible === "offcanvas" && isMobile && open ? {} : { width: collapsible === "icon" && !open ? "3rem" : SIDEBAR_WIDTH }),
       } as React.CSSProperties}
       {...props}
     />
@@ -495,6 +504,29 @@ const SidebarTrigger = React.forwardRef<HTMLButtonElement, React.ButtonHTMLAttri
 )
 SidebarTrigger.displayName = "SidebarTrigger"
 
+// SidebarOverlay: backdrop on mobile when sidebar is open; tap or Escape to close
+const SidebarOverlay: React.FC = () => {
+  const { isMobile, open, setOpen } = useSidebar()
+  React.useEffect(() => {
+    if (!isMobile || !open) return
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false)
+    }
+    document.addEventListener("keydown", onKeyDown)
+    return () => document.removeEventListener("keydown", onKeyDown)
+  }, [isMobile, open, setOpen])
+  if (!isMobile || !open) return null
+  return (
+    <div
+      role="button"
+      tabIndex={-1}
+      aria-label="Close sidebar"
+      className="fixed inset-0 z-30 bg-black/50 md:hidden"
+      onClick={() => setOpen(false)}
+    />
+  )
+}
+
 export {
   SidebarProvider,
   Sidebar,
@@ -518,4 +550,5 @@ export {
   SidebarRail,
   SidebarInset,
   SidebarTrigger,
+  SidebarOverlay,
 }
