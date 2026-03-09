@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import { useLocation, Link, useParams, type Params } from 'react-router-dom'
 import { SidebarProvider, SidebarInset, SidebarTrigger, SidebarOverlay, useSidebar } from './ui/sidebar'
 import { AppSidebar, type MenuItem } from './AppSidebar'
+import { AppSidebar, type MenuItem, type LanguageMenuItem } from './AppSidebar'
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -30,12 +31,17 @@ export interface LayoutProps {
   children: React.ReactNode
   siteName?: string
   menuItems?: MenuItem[]
+  languageMenuItems?: LanguageMenuItem[]
+  languageMenuLabel?: string
   routeNames?: Record<string, string>
   getBreadcrumbLabel?: (pathname: string, params: Params) => string | null
   /** Optional content rendered on the right side of the page header (e.g. search) */
   headerRight?: React.ReactNode
   /** Optional content rendered in the sidebar below the menu (e.g. search) */
   sidebarExtra?: React.ReactNode
+  homeHref?: string
+  homeLabel?: string
+  hiddenPathSegments?: string[]
 }
 
 /**
@@ -45,10 +51,15 @@ export function Layout({
   children,
   siteName,
   menuItems = [],
+  languageMenuItems = [],
+  languageMenuLabel,
   routeNames = {},
   getBreadcrumbLabel,
   headerRight,
-  sidebarExtra
+  sidebarExtra,
+  homeHref = '/',
+  homeLabel = 'Home',
+  hiddenPathSegments = [],
 }: LayoutProps) {
   const location = useLocation()
   const params = useParams()
@@ -156,14 +167,18 @@ export function Layout({
 
   // Generate breadcrumb items from pathname
   const getBreadcrumbs = (): BreadcrumbItem[] => {
-    const pathnames = location.pathname.split('/').filter((x) => x)
+    const allSegments = location.pathname.split('/').filter((x) => x)
+    const localePrefix = allSegments[0] && hiddenPathSegments.includes(allSegments[0])
+      ? `/${allSegments[0]}`
+      : ''
+    const pathnames = allSegments.filter((segment) => !hiddenPathSegments.includes(segment))
     const breadcrumbs: BreadcrumbItem[] = []
 
     // Always include Home
-    breadcrumbs.push({ label: 'Home', href: '/', isLast: false })
+    breadcrumbs.push({ label: homeLabel, href: homeHref, isLast: false })
 
     // Build breadcrumbs from path segments
-    let currentPath = ''
+    let currentPath = localePrefix
     pathnames.forEach((segment, index) => {
       currentPath += `/${segment}`
       const isLast = index === pathnames.length - 1
@@ -196,7 +211,13 @@ export function Layout({
 
   return (
     <SidebarProvider defaultOpen={true}>
-      <AppSidebar siteName={siteName || ''} menuItems={menuItems} extraContent={sidebarExtra} />
+      <AppSidebar
+        siteName={siteName || ''}
+        menuItems={menuItems}
+        extraContent={sidebarExtra}
+        languageMenuItems={languageMenuItems}
+        languageMenuLabel={languageMenuLabel}
+      />
       <SidebarOverlay />
       <SidebarInset className="min-w-0 max-w-full overflow-x-hidden">
         <PageHeader breadcrumbs={breadcrumbs} headerRight={headerRight} />
