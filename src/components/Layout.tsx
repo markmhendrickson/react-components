@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useLocation, Link, useParams, type Params } from 'react-router-dom'
 import { SidebarProvider, SidebarInset, SidebarTrigger, SidebarOverlay, useSidebar } from './ui/sidebar'
-import { AppSidebar, type MenuItem } from './AppSidebar'
 import { AppSidebar, type MenuItem, type LanguageMenuItem } from './AppSidebar'
 import {
   Breadcrumb,
@@ -33,6 +32,11 @@ export interface LayoutProps {
   menuItems?: MenuItem[]
   languageMenuItems?: LanguageMenuItem[]
   languageMenuLabel?: string
+  themeMenuLabel?: string
+  themeMenuAriaLabel?: string
+  themeSystem?: string
+  themeLight?: string
+  themeDark?: string
   routeNames?: Record<string, string>
   getBreadcrumbLabel?: (pathname: string, params: Params) => string | null
   /** Optional content rendered on the right side of the page header (e.g. search) */
@@ -53,6 +57,11 @@ export function Layout({
   menuItems = [],
   languageMenuItems = [],
   languageMenuLabel,
+  themeMenuLabel,
+  themeMenuAriaLabel,
+  themeSystem,
+  themeLight,
+  themeDark,
   routeNames = {},
   getBreadcrumbLabel,
   headerRight,
@@ -217,6 +226,11 @@ export function Layout({
         extraContent={sidebarExtra}
         languageMenuItems={languageMenuItems}
         languageMenuLabel={languageMenuLabel}
+        themeMenuLabel={themeMenuLabel}
+        themeMenuAriaLabel={themeMenuAriaLabel}
+        themeSystem={themeSystem}
+        themeLight={themeLight}
+        themeDark={themeDark}
       />
       <SidebarOverlay />
       <SidebarInset className="min-w-0 max-w-full overflow-x-hidden">

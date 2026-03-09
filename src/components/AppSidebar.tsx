@@ -28,6 +28,12 @@ export interface AppSidebarProps {
   extraContent?: React.ReactNode
   languageMenuItems?: LanguageMenuItem[]
   languageMenuLabel?: string
+  /** Theme menu labels (for i18n) */
+  themeMenuLabel?: string
+  themeMenuAriaLabel?: string
+  themeSystem?: string
+  themeLight?: string
+  themeDark?: string
 }
 
 export interface LanguageMenuItem {
@@ -46,7 +52,18 @@ type ThemePreference = 'system' | 'light' | 'dark'
  * Configurable AppSidebar component.
  * On mobile, nav items are in a bar at the bottom of the sidebar panel (above browser chrome); it slides in/out with the sidebar.
  */
-export function AppSidebar({ siteName, menuItems = [], extraContent, languageMenuItems = [], languageMenuLabel = 'Language' }: AppSidebarProps) {
+export function AppSidebar({
+  siteName,
+  menuItems = [],
+  extraContent,
+  languageMenuItems = [],
+  languageMenuLabel = 'Language',
+  themeMenuLabel = 'Theme',
+  themeMenuAriaLabel = 'Toggle theme menu',
+  themeSystem = 'System',
+  themeLight = 'Light',
+  themeDark = 'Dark',
+}: AppSidebarProps) {
   const location = useLocation()
   const { isMobile, setOpen, open } = useSidebar()
   const [languageMenuOpen, setLanguageMenuOpen] = useState(false)
@@ -186,12 +203,12 @@ export function AppSidebar({ siteName, menuItems = [], extraContent, languageMen
               type="button"
               onClick={() => setThemeMenuOpen((prev) => !prev)}
               aria-expanded={themeMenuOpen}
-              aria-label="Toggle theme menu"
+              aria-label={themeMenuAriaLabel}
             >
               <span className="flex shrink-0 text-sidebar-foreground [&>svg]:size-5 [&>svg]:fill-none [&>svg]:stroke-current md:[&>svg]:size-4">
                 <SunMoon aria-hidden />
               </span>
-              <span>Theme</span>
+              <span>{themeMenuLabel}</span>
               <ChevronDown
                 aria-hidden
                 className={`ml-auto h-4 w-4 shrink-0 transition-transform ${themeMenuOpen ? 'rotate-180' : ''}`}
@@ -209,7 +226,7 @@ export function AppSidebar({ siteName, menuItems = [], extraContent, languageMen
                     setThemeMenuOpen(false)
                   }}
                 >
-                  <span>System</span>
+                  <span>{themeSystem}</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
@@ -221,7 +238,7 @@ export function AppSidebar({ siteName, menuItems = [], extraContent, languageMen
                     setThemeMenuOpen(false)
                   }}
                 >
-                  <span>Light</span>
+                  <span>{themeLight}</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
@@ -233,7 +250,7 @@ export function AppSidebar({ siteName, menuItems = [], extraContent, languageMen
                     setThemeMenuOpen(false)
                   }}
                 >
-                  <span>Dark</span>
+                  <span>{themeDark}</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </>
