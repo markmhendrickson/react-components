@@ -321,7 +321,7 @@ const SidebarMenuButton = React.forwardRef<HTMLButtonElement, SidebarMenuButtonP
         ref={ref}
         data-active={isActive}
         className={cn(
-          "peer/menu-button flex w-full items-center gap-3 overflow-hidden rounded-md p-3 text-left text-base min-h-[44px] outline-none ring-sidebar-ring transition-[width,height,padding] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 focus-visible:ring-sidebar-ring active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 group-has-[[data-side=left]]/sidebar-item:pr-2 group-has-[[data-side=right]]/sidebar-item:pl-2 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-sidebar-accent data-[active=true]:font-medium data-[active=true]:text-sidebar-accent-foreground data-[state=open]:hover:bg-sidebar-accent data-[state=open]:hover:text-sidebar-accent-foreground md:gap-2 md:p-2 md:text-sm md:min-h-0 [-webkit-tap-highlight-color:transparent] [tap-highlight-color:transparent]",
+          "peer/menu-button flex w-full items-center gap-3 overflow-hidden rounded-md p-3 text-start text-base min-h-[44px] outline-none ring-sidebar-ring transition-[width,height,padding] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 focus-visible:ring-sidebar-ring active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 group-has-[[data-side=left]]/sidebar-item:pr-2 group-has-[[data-side=right]]/sidebar-item:pl-2 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-sidebar-accent data-[active=true]:font-medium data-[active=true]:text-sidebar-accent-foreground data-[state=open]:hover:bg-sidebar-accent data-[state=open]:hover:text-sidebar-accent-foreground md:gap-2 md:p-2 md:text-sm md:min-h-0 [-webkit-tap-highlight-color:transparent] [tap-highlight-color:transparent]",
           className
         )}
         {...props}
@@ -463,15 +463,19 @@ const SidebarRail = React.forwardRef<HTMLButtonElement, React.ButtonHTMLAttribut
 SidebarRail.displayName = "SidebarRail"
 
 // SidebarInset
-const SidebarInset = React.forwardRef<HTMLElement, React.HTMLAttributes<HTMLElement>>(
-  ({ className, ...props }, ref) => {
+interface SidebarInsetProps extends React.HTMLAttributes<HTMLElement> {
+  side?: "left" | "right"
+}
+
+const SidebarInset = React.forwardRef<HTMLElement, SidebarInsetProps>(
+  ({ className, side = "left", ...props }, ref) => {
     const { open, isMobile } = useSidebar()
     return (
       <main
         ref={ref as React.Ref<HTMLElement>}
         className={cn(
           "relative flex min-h-screen flex-1 flex-col bg-background min-w-0",
-          !isMobile && open && "md:ml-64",
+          !isMobile && open && (side === "left" ? "md:ml-64" : "md:mr-64"),
           "transition-[margin] duration-200 ease-linear",
           className
         )}

@@ -24,6 +24,7 @@ export interface MenuItem {
 export interface AppSidebarProps {
   siteName: string
   menuItems?: MenuItem[]
+  direction?: 'ltr' | 'rtl'
   /** Optional content rendered below the menu (e.g. search) */
   extraContent?: React.ReactNode
   languageMenuItems?: LanguageMenuItem[]
@@ -41,6 +42,7 @@ export interface LanguageMenuItem {
   label: string
   isActive?: boolean
   onSelect?: () => void
+  className?: string
 }
 
 /** Bottom inset so nav clears browser chrome. Chrome on iOS often reports 0 safe-area; use a minimum that clears its URL bar and keeps last item (e.g. Links) visible (~5.75rem). */
@@ -55,6 +57,7 @@ type ThemePreference = 'system' | 'light' | 'dark'
 export function AppSidebar({
   siteName,
   menuItems = [],
+  direction = 'ltr',
   extraContent,
   languageMenuItems = [],
   languageMenuLabel = 'Language',
@@ -64,6 +67,7 @@ export function AppSidebar({
   themeLight = 'Light',
   themeDark = 'Dark',
 }: AppSidebarProps) {
+  const isRtl = direction === 'rtl'
   const location = useLocation()
   const { isMobile, setOpen, open } = useSidebar()
   const [languageMenuOpen, setLanguageMenuOpen] = useState(false)
@@ -168,14 +172,14 @@ export function AppSidebar({
               <span>{languageMenuLabel}</span>
               <ChevronDown
                 aria-hidden
-                className={`ml-auto h-4 w-4 shrink-0 transition-transform ${languageMenuOpen ? 'rotate-180' : ''}`}
+                className={`${isRtl ? 'mr-auto' : 'ml-auto'} h-4 w-4 shrink-0 transition-transform ${languageMenuOpen ? 'rotate-180' : ''}`}
               />
             </SidebarMenuButton>
           </SidebarMenuItem>
           {languageMenuOpen &&
             languageMenuItems.map((item) => (
               <SidebarMenuItem key={item.path}>
-                <SidebarMenuButton asChild isActive={item.isActive}>
+                <SidebarMenuButton asChild isActive={item.isActive} className={item.className}>
                   <Link
                     to={item.path}
                     onClick={() => {
@@ -211,7 +215,7 @@ export function AppSidebar({
               <span>{themeMenuLabel}</span>
               <ChevronDown
                 aria-hidden
-                className={`ml-auto h-4 w-4 shrink-0 transition-transform ${themeMenuOpen ? 'rotate-180' : ''}`}
+                className={`${isRtl ? 'mr-auto' : 'ml-auto'} h-4 w-4 shrink-0 transition-transform ${themeMenuOpen ? 'rotate-180' : ''}`}
               />
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -261,7 +265,7 @@ export function AppSidebar({
   )
 
   return (
-    <Sidebar side={isMobile ? 'right' : 'left'}>
+    <Sidebar side={isMobile ? 'right' : isRtl ? 'right' : 'left'}>
       <SidebarHeader>
         <div className="flex items-center gap-2 h-16 w-full">
           {open && !isMobile && <SidebarTrigger className="-ml-1" />}
@@ -299,9 +303,10 @@ export function AppSidebar({
       )}
       {isMobile && (
         <div
-          className="absolute inset-x-0 flex flex-col gap-2 border-t border-sidebar-border bg-sidebar px-2 pt-4 pb-6 text-sidebar-foreground md:hidden"
+          className="absolute inset-x-0 top-0 flex flex-col gap-2 border-t border-sidebar-border bg-sidebar px-2 pt-4 pb-6 text-sidebar-foreground md:hidden overflow-y-auto min-h-0"
           style={{ bottom: MOBILE_NAV_BOTTOM }}
         >
+          <div className="flex-1 min-h-0" aria-hidden="true" />
           {themeMenu}
           {languageMenu}
           {menuContent}

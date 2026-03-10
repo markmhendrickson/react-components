@@ -28,6 +28,7 @@ interface BreadcrumbItem {
 
 export interface LayoutProps {
   children: React.ReactNode
+  direction?: 'ltr' | 'rtl'
   siteName?: string
   menuItems?: MenuItem[]
   languageMenuItems?: LanguageMenuItem[]
@@ -53,6 +54,7 @@ export interface LayoutProps {
  */
 export function Layout({
   children,
+  direction = 'ltr',
   siteName,
   menuItems = [],
   languageMenuItems = [],
@@ -70,6 +72,7 @@ export function Layout({
   homeLabel = 'Home',
   hiddenPathSegments = [],
 }: LayoutProps) {
+  const isRtl = direction === 'rtl'
   const location = useLocation()
   const params = useParams()
   // Compute during render so breadcrumb shows correct label (e.g. sentence-case post title) on first paint
@@ -219,28 +222,55 @@ export function Layout({
   const breadcrumbs = getBreadcrumbs()
 
   return (
-    <SidebarProvider defaultOpen={true}>
-      <AppSidebar
-        siteName={siteName || ''}
-        menuItems={menuItems}
-        extraContent={sidebarExtra}
-        languageMenuItems={languageMenuItems}
-        languageMenuLabel={languageMenuLabel}
-        themeMenuLabel={themeMenuLabel}
-        themeMenuAriaLabel={themeMenuAriaLabel}
-        themeSystem={themeSystem}
-        themeLight={themeLight}
-        themeDark={themeDark}
+    <div dir={direction}>
+      <SidebarProvider defaultOpen={true}>
+        <AppSidebar
+          siteName={siteName || ''}
+          direction={direction}
+          menuItems={menuItems}
+          extraContent={sidebarExtra}
+          languageMenuItems={languageMenuItems}
+          languageMenuLabel={languageMenuLabel}
+          themeMenuLabel={themeMenuLabel}
+          themeMenuAriaLabel={themeMenuAriaLabel}
+          themeSystem={themeSystem}
+          themeLight={themeLight}
+          themeDark={themeDark}
+        />
+        <SidebarOverlay />
+        <MobileMenuFab direction={direction} />
+        <SidebarInset side={isRtl ? 'right' : 'left'} className="min-w-0 max-w-full overflow-x-hidden">
+          <PageHeader breadcrumbs={breadcrumbs} headerRight={headerRight} direction={direction} />
+          <div className={cn(
+            'min-h-[calc(100vh-var(--header-height,4rem))] pt-4 px-4 pb-4 md:pt-[var(--header-height,4rem)] md:px-6 md:pb-6 min-w-0 max-w-full overflow-x-hidden',
+            isRtl && 'text-right'
+          )}>
+            {children}
+          </div>
+        </SidebarInset>
+      </SidebarProvider>
+    </div>
+  )
+}
+
+/**
+ * Fixed menu button at bottom-right on mobile only. Opens sidebar from the right.
+ * Bottom inset matches right (1.5rem / right-6) for equal corner spacing; respects safe-area when set.
+ */
+function MobileMenuFab({ direction }: { direction: 'ltr' | 'rtl' }) {
+  const { isMobile } = useSidebar()
+  if (!isMobile) return null
+  const isRtl = direction === 'rtl'
+  return (
+    <div
+      className={cn('fixed z-50 md:hidden', isRtl ? 'left-6' : 'right-6')}
+      style={{ bottom: 'max(1.5rem, env(safe-area-inset-bottom, 0px))' }}
+    >
+      <SidebarTrigger
+        className="flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg hover:!bg-primary hover:!text-primary-foreground active:!bg-primary active:!text-primary-foreground focus-visible:ring-2 focus-visible:ring-ring"
+        aria-label="Open menu"
       />
-      <SidebarOverlay />
-      <MobileSidebarFab />
-      <SidebarInset className="min-w-0 max-w-full overflow-x-hidden">
-        <PageHeader breadcrumbs={breadcrumbs} headerRight={headerRight} />
-        <div className="min-h-[calc(100vh-4rem)] p-4 md:p-6 min-w-0 max-w-full overflow-x-hidden">
-          {children}
-        </div>
-      </SidebarInset>
-    </SidebarProvider>
+    </div>
   )
 }
 
@@ -250,13 +280,16 @@ export function Layout({
 interface PageHeaderProps {
   breadcrumbs: BreadcrumbItem[]
   headerRight?: React.ReactNode
+  direction: 'ltr' | 'rtl'
 }
 
-function PageHeader({ breadcrumbs, headerRight }: PageHeaderProps) {
+function PageHeader({ breadcrumbs, headerRight, direction }: PageHeaderProps) {
   const { open, isMobile } = useSidebar()
+  const isRtl = direction === 'rtl'
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background px-4 min-w-0 max-w-full overflow-x-hidden">
+    <header className="sticky top-0 z-30 flex h-[var(--header-height,4rem)] items-center gap-4 border-b bg-background px-4 min-w-0 max-w-full overflow-x-hidden">
+      {/* Desktop: show trigger in header when sidebar is closed; mobile uses fixed FAB */}
       {!isMobile && !open && <SidebarTrigger className="-ml-1 shrink-0" aria-label="Open menu" />}
       <Breadcrumb className="min-w-0 flex-1 overflow-hidden max-w-full">
         <BreadcrumbList className="flex-nowrap min-w-0 max-w-full">
@@ -280,24 +313,10 @@ function PageHeader({ breadcrumbs, headerRight }: PageHeaderProps) {
         </BreadcrumbList>
       </Breadcrumb>
       {headerRight != null && (
-        <div className="ml-auto shrink-0 flex items-center">
+        <div className={cn('shrink-0 flex items-center', isRtl ? 'mr-auto' : 'ml-auto')}>
           {headerRight}
         </div>
       )}
     </header>
-  )
-}
-
-function MobileSidebarFab() {
-  const { isMobile, open } = useSidebar()
-
-  if (!isMobile || open) return null
-
-  return (
-    <SidebarTrigger
-      aria-label="Open menu"
-      className="fixed z-50 rounded-full border border-sidebar-border bg-sidebar text-sidebar-foreground shadow-lg right-4 md:hidden"
-      style={{ bottom: 'max(1rem, calc(env(safe-area-inset-bottom, 0px) + 0.5rem))' }}
-    />
   )
 }
