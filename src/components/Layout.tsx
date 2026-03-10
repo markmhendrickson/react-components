@@ -233,6 +233,7 @@ export function Layout({
         themeDark={themeDark}
       />
       <SidebarOverlay />
+      <MobileSidebarFab />
       <SidebarInset className="min-w-0 max-w-full overflow-x-hidden">
         <PageHeader breadcrumbs={breadcrumbs} headerRight={headerRight} />
         <div className="min-h-[calc(100vh-4rem)] p-4 md:p-6 min-w-0 max-w-full overflow-x-hidden">
@@ -256,7 +257,7 @@ function PageHeader({ breadcrumbs, headerRight }: PageHeaderProps) {
 
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background px-4 min-w-0 max-w-full overflow-x-hidden">
-      {(!open || isMobile) && <SidebarTrigger className="-ml-1 shrink-0" aria-label="Open menu" />}
+      {!isMobile && !open && <SidebarTrigger className="-ml-1 shrink-0" aria-label="Open menu" />}
       <Breadcrumb className="min-w-0 flex-1 overflow-hidden max-w-full">
         <BreadcrumbList className="flex-nowrap min-w-0 max-w-full">
           {breadcrumbs.map((crumb, index) => (
@@ -284,5 +285,19 @@ function PageHeader({ breadcrumbs, headerRight }: PageHeaderProps) {
         </div>
       )}
     </header>
+  )
+}
+
+function MobileSidebarFab() {
+  const { isMobile, open } = useSidebar()
+
+  if (!isMobile || open) return null
+
+  return (
+    <SidebarTrigger
+      aria-label="Open menu"
+      className="fixed z-50 rounded-full border border-sidebar-border bg-sidebar text-sidebar-foreground shadow-lg right-4 md:hidden"
+      style={{ bottom: 'max(1rem, calc(env(safe-area-inset-bottom, 0px) + 0.5rem))' }}
+    />
   )
 }
