@@ -47,6 +47,8 @@ export interface LayoutProps {
   homeHref?: string
   homeLabel?: string
   hiddenPathSegments?: string[]
+  /** Full-width block below main content (e.g. site footer band) */
+  footer?: React.ReactNode
 }
 
 /**
@@ -71,6 +73,7 @@ export function Layout({
   homeHref = '/',
   homeLabel = 'Home',
   hiddenPathSegments = [],
+  footer,
 }: LayoutProps) {
   const isRtl = direction === 'rtl'
   const location = useLocation()
@@ -241,11 +244,20 @@ export function Layout({
         <MobileMenuFab direction={direction} />
         <SidebarInset side={isRtl ? 'right' : 'left'} className="min-w-0 max-w-full overflow-x-hidden">
           <PageHeader breadcrumbs={breadcrumbs} headerRight={headerRight} direction={direction} />
-          <div className={cn(
-            'min-h-[calc(100vh-var(--header-height,4rem))] pt-4 px-4 pb-4 md:pt-[var(--header-height,4rem)] md:px-6 md:pb-6 min-w-0 max-w-full overflow-x-hidden',
-            isRtl && 'text-right'
-          )}>
-            {children}
+          <div
+            className={cn(
+              'flex flex-1 flex-col min-w-0 max-w-full overflow-x-hidden min-h-[calc(100vh-var(--header-height,4rem))]',
+              isRtl && 'text-right',
+            )}
+          >
+            <div
+              className={cn(
+                'flex-1 pt-4 px-4 pb-4 md:pt-[var(--header-height,4rem)] md:px-6 md:pb-6 min-w-0 max-w-full overflow-x-hidden',
+              )}
+            >
+              {children}
+            </div>
+            {footer}
           </div>
         </SidebarInset>
       </SidebarProvider>
