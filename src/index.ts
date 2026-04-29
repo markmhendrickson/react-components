@@ -35,7 +35,7 @@ export { useObservations } from "./hooks/useObservations";
 
 // Layout components
 export { Layout } from "./components/Layout";
-export type { LayoutProps } from "./components/Layout";
+export type { LayoutProps, ExtraBreadcrumb } from "./components/Layout";
 
 // Sidebar components
 export { AppSidebar } from "./components/AppSidebar";

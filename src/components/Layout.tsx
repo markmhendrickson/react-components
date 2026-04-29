@@ -26,6 +26,14 @@ interface BreadcrumbItem {
   isLast: boolean
 }
 
+/** Extra breadcrumb inserted between auto-generated path segments. */
+export interface ExtraBreadcrumb {
+  /** Insert after the crumb whose href ends with this path (e.g. `/posts`). */
+  afterHref: string
+  label: string
+  href: string
+}
+
 export interface LayoutProps {
   children: React.ReactNode
   direction?: 'ltr' | 'rtl'
@@ -40,6 +48,8 @@ export interface LayoutProps {
   themeDark?: string
   routeNames?: Record<string, string>
   getBreadcrumbLabel?: (pathname: string, params: Params) => string | null
+  /** Crumbs injected between auto-generated path segments (e.g. series link between Posts and post title). */
+  extraBreadcrumbs?: ExtraBreadcrumb[]
   /** Optional content rendered on the right side of the page header (e.g. search) */
   headerRight?: React.ReactNode
   /** Optional content rendered in the sidebar below the menu (e.g. search) */
@@ -68,6 +78,7 @@ export function Layout({
   themeDark,
   routeNames = {},
   getBreadcrumbLabel,
+  extraBreadcrumbs,
   headerRight,
   sidebarExtra,
   homeHref = '/',
@@ -215,9 +226,24 @@ export function Layout({
       breadcrumbs.push({
         label,
         href: currentPath,
-        isLast,
+        isLast: false,
       })
+
+      // Inject extra breadcrumbs after this segment if any match.
+      if (extraBreadcrumbs) {
+        const norm = currentPath.replace(/\/+$/, '')
+        for (const extra of extraBreadcrumbs) {
+          if (norm === extra.afterHref.replace(/\/+$/, '')) {
+            breadcrumbs.push({ label: extra.label, href: extra.href, isLast: false })
+          }
+        }
+      }
     })
+
+    // Mark the actual last crumb.
+    if (breadcrumbs.length > 0) {
+      breadcrumbs[breadcrumbs.length - 1].isLast = true
+    }
 
     return breadcrumbs
   }
