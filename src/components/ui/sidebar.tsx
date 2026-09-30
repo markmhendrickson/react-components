@@ -2,6 +2,7 @@ import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { PanelLeft } from "lucide-react"
 import { cn } from "../../lib/utils"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./tooltip"
 
 // Constants
 const SIDEBAR_COOKIE_NAME = "sidebar_state"
@@ -115,7 +116,7 @@ const SidebarProvider: React.FC<SidebarProviderProps> = ({
 
   return (
     <SidebarContext.Provider value={value} {...props}>
-      {children}
+      <TooltipProvider delayDuration={100}>{children}</TooltipProvider>
     </SidebarContext.Provider>
   )
 }
@@ -311,21 +312,34 @@ SidebarMenuItem.displayName = "SidebarMenuItem"
 interface SidebarMenuButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   asChild?: boolean
   isActive?: boolean
+  /** Tooltip shown beside the button while the sidebar is collapsed to its icon rail (desktop only). */
+  tooltip?: string
 }
 
 const SidebarMenuButton = React.forwardRef<HTMLButtonElement, SidebarMenuButtonProps>(
-  ({ asChild = false, isActive, className, ...props }, ref) => {
+  ({ asChild = false, isActive, tooltip, className, ...props }, ref) => {
     const Comp = asChild ? Slot : "button"
-    return (
+    const { state, isMobile } = useSidebar()
+    const button = (
       <Comp
         ref={ref}
         data-active={isActive}
         className={cn(
           "peer/menu-button flex w-full items-center gap-3 overflow-hidden rounded-md p-3 text-start text-base min-h-[44px] outline-none ring-sidebar-ring transition-[width,height,padding] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 focus-visible:ring-sidebar-ring active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 group-has-[[data-side=left]]/sidebar-item:pr-2 group-has-[[data-side=right]]/sidebar-item:pl-2 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-sidebar-accent data-[active=true]:font-medium data-[active=true]:text-sidebar-accent-foreground data-[state=open]:hover:bg-sidebar-accent data-[state=open]:hover:text-sidebar-accent-foreground md:gap-2 md:p-2 md:text-sm md:min-h-0 [-webkit-tap-highlight-color:transparent] [tap-highlight-color:transparent]",
+          "group-data-[state=collapsed]/sidebar:justify-center",
           className
         )}
         {...props}
       />
+    )
+    if (!tooltip) return button
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>{button}</TooltipTrigger>
+        <TooltipContent side="right" align="center" hidden={state !== "collapsed" || isMobile}>
+          {tooltip}
+        </TooltipContent>
+      </Tooltip>
     )
   }
 )
@@ -465,20 +479,28 @@ SidebarRail.displayName = "SidebarRail"
 // SidebarInset
 interface SidebarInsetProps extends React.HTMLAttributes<HTMLElement> {
   side?: "left" | "right"
+  /** Match the Sidebar's collapsible mode so the content offset follows the icon rail when collapsed. */
+  collapsible?: "offcanvas" | "icon"
 }
 
 const SidebarInset = React.forwardRef<HTMLElement, SidebarInsetProps>(
-  ({ className, side = "left", ...props }, ref) => {
+  ({ className, side = "left", collapsible = "offcanvas", style, ...props }, ref) => {
     const { open, isMobile } = useSidebar()
+    const railCollapsed = !isMobile && !open && collapsible === "icon"
+    // Width taken by the sidebar beside the content. Exposed as a CSS variable so page content
+    // can size itself to the full content area (for example full-bleed images).
+    const sidebarWidth = isMobile ? "0px" : open ? "16rem" : collapsible === "icon" ? "3rem" : "0px"
     return (
       <main
         ref={ref as React.Ref<HTMLElement>}
         className={cn(
           "relative flex min-h-screen flex-1 flex-col bg-background min-w-0",
           !isMobile && open && (side === "left" ? "md:ml-64" : "md:mr-64"),
+          railCollapsed && (side === "left" ? "md:ml-12" : "md:mr-12"),
           "transition-[margin] duration-200 ease-linear",
           className
         )}
+        style={{ "--sidebar-w": sidebarWidth, ...style } as React.CSSProperties}
         {...props}
       />
     )
@@ -488,12 +510,15 @@ SidebarInset.displayName = "SidebarInset"
 
 // SidebarTrigger
 const SidebarTrigger = React.forwardRef<HTMLButtonElement, React.ButtonHTMLAttributes<HTMLButtonElement>>(
-  ({ className, ...props }, ref) => {
+  ({ className, onClick, ...props }, ref) => {
     const { toggleSidebar } = useSidebar()
     return (
       <button
         ref={ref}
-        onClick={toggleSidebar}
+        onClick={(event) => {
+          onClick?.(event)
+          if (!event.defaultPrevented) toggleSidebar()
+        }}
         className={cn(
           "inline-flex items-center justify-center rounded-md p-3 min-h-[44px] min-w-[44px] text-sm font-medium outline-none ring-sidebar-ring transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 focus-visible:ring-sidebar-ring disabled:pointer-events-none disabled:opacity-50 md:p-2 md:min-h-0 md:min-w-0 [-webkit-tap-highlight-color:transparent] [tap-highlight-color:transparent] [&>svg]:fill-none [&>svg]:stroke-current",
           className
