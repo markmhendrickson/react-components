@@ -14,6 +14,7 @@ import {
   SidebarTrigger,
   useSidebar,
 } from './ui/sidebar'
+import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip'
 
 export interface MenuItem {
   path: string
@@ -35,6 +36,13 @@ export interface AppSidebarProps {
   themeSystem?: string
   themeLight?: string
   themeDark?: string
+  /**
+   * Desktop collapse behaviour. 'offcanvas' (default) slides the sidebar fully out of view.
+   * 'icon' collapses it to a narrow icon rail whose items show their names in tooltips.
+   */
+  collapsible?: 'offcanvas' | 'icon'
+  /** Tooltip for the rail's expand button (icon mode). */
+  expandLabel?: string
 }
 
 export interface LanguageMenuItem {
@@ -66,10 +74,15 @@ export function AppSidebar({
   themeSystem = 'System',
   themeLight = 'Light',
   themeDark = 'Dark',
+  collapsible = 'offcanvas',
+  expandLabel = 'Expand sidebar',
 }: AppSidebarProps) {
   const isRtl = direction === 'rtl'
   const location = useLocation()
   const { isMobile, setOpen, open } = useSidebar()
+  const railMode = collapsible === 'icon' && !isMobile
+  const collapsed = railMode && !open
+  const labelHiddenWhenCollapsed = 'group-data-[state=collapsed]/sidebar:hidden'
   const [languageMenuOpen, setLanguageMenuOpen] = useState(false)
   const [themeMenuOpen, setThemeMenuOpen] = useState(false)
   const [themePreference, setThemePreference] = useState<ThemePreference>(() => {
@@ -137,14 +150,14 @@ export function AppSidebar({
           const Icon = item.icon
           return (
             <SidebarMenuItem key={item.path}>
-              <SidebarMenuButton asChild isActive={isActive(item.path)}>
+              <SidebarMenuButton asChild isActive={isActive(item.path)} tooltip={item.label}>
                 <Link to={item.path} onClick={handleLinkClick}>
                   {Icon && (
                     <span className="flex shrink-0 text-sidebar-foreground [&>svg]:size-5 [&>svg]:fill-none [&>svg]:stroke-current md:[&>svg]:size-4">
                       <Icon aria-hidden />
                     </span>
                   )}
-                  <span>{item.label}</span>
+                  <span className={labelHiddenWhenCollapsed}>{item.label}</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
@@ -162,21 +175,29 @@ export function AppSidebar({
           <SidebarMenuItem>
             <SidebarMenuButton
               type="button"
-              onClick={() => setLanguageMenuOpen((prev) => !prev)}
-              aria-expanded={languageMenuOpen}
+              tooltip={languageMenuLabel}
+              onClick={() => {
+                if (collapsed) {
+                  setOpen(true)
+                  setLanguageMenuOpen(true)
+                  return
+                }
+                setLanguageMenuOpen((prev) => !prev)
+              }}
+              aria-expanded={languageMenuOpen && !collapsed}
               aria-label="Toggle language menu"
             >
               <span className="flex shrink-0 text-sidebar-foreground [&>svg]:size-5 [&>svg]:fill-none [&>svg]:stroke-current md:[&>svg]:size-4">
                 <Languages aria-hidden />
               </span>
-              <span>{languageMenuLabel}</span>
+              <span className={labelHiddenWhenCollapsed}>{languageMenuLabel}</span>
               <ChevronDown
                 aria-hidden
-                className={`${isRtl ? 'mr-auto' : 'ml-auto'} h-4 w-4 shrink-0 transition-transform ${languageMenuOpen ? 'rotate-180' : ''}`}
+                className={`${isRtl ? 'mr-auto' : 'ml-auto'} h-4 w-4 shrink-0 transition-transform ${labelHiddenWhenCollapsed} ${languageMenuOpen ? 'rotate-180' : ''}`}
               />
             </SidebarMenuButton>
           </SidebarMenuItem>
-          {languageMenuOpen &&
+          {languageMenuOpen && !collapsed &&
             languageMenuItems.map((item) => (
               <SidebarMenuItem key={item.path}>
                 <SidebarMenuButton asChild isActive={item.isActive} className={item.className}>
@@ -205,21 +226,29 @@ export function AppSidebar({
           <SidebarMenuItem>
             <SidebarMenuButton
               type="button"
-              onClick={() => setThemeMenuOpen((prev) => !prev)}
-              aria-expanded={themeMenuOpen}
+              tooltip={themeMenuLabel}
+              onClick={() => {
+                if (collapsed) {
+                  setOpen(true)
+                  setThemeMenuOpen(true)
+                  return
+                }
+                setThemeMenuOpen((prev) => !prev)
+              }}
+              aria-expanded={themeMenuOpen && !collapsed}
               aria-label={themeMenuAriaLabel}
             >
               <span className="flex shrink-0 text-sidebar-foreground [&>svg]:size-5 [&>svg]:fill-none [&>svg]:stroke-current md:[&>svg]:size-4">
                 <SunMoon aria-hidden />
               </span>
-              <span>{themeMenuLabel}</span>
+              <span className={labelHiddenWhenCollapsed}>{themeMenuLabel}</span>
               <ChevronDown
                 aria-hidden
-                className={`${isRtl ? 'mr-auto' : 'ml-auto'} h-4 w-4 shrink-0 transition-transform ${themeMenuOpen ? 'rotate-180' : ''}`}
+                className={`${isRtl ? 'mr-auto' : 'ml-auto'} h-4 w-4 shrink-0 transition-transform ${labelHiddenWhenCollapsed} ${themeMenuOpen ? 'rotate-180' : ''}`}
               />
             </SidebarMenuButton>
           </SidebarMenuItem>
-          {themeMenuOpen && (
+          {themeMenuOpen && !collapsed && (
             <>
               <SidebarMenuItem>
                 <SidebarMenuButton
@@ -265,16 +294,31 @@ export function AppSidebar({
   )
 
   return (
-    <Sidebar side={isMobile ? 'right' : isRtl ? 'right' : 'left'}>
-      <SidebarHeader>
-        <div className="flex items-center gap-2 h-16 w-full">
-          {open && !isMobile && <SidebarTrigger className="-ml-1" />}
-          <Link to="/" onClick={handleLinkClick} className="flex items-center gap-3 flex-1">
-            <span className="text-base font-medium">{siteName}</span>
-          </Link>
+    <Sidebar side={isMobile ? 'right' : isRtl ? 'right' : 'left'} collapsible={railMode ? 'icon' : 'offcanvas'}>
+      <SidebarHeader className="group-data-[state=collapsed]/sidebar:px-0 group-data-[state=collapsed]/sidebar:justify-center">
+        <div className="flex items-center gap-2 h-16 w-full group-data-[state=collapsed]/sidebar:justify-center">
+          {!isMobile && (open || railMode) && (
+            collapsed ? (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <SidebarTrigger aria-label={expandLabel} />
+                </TooltipTrigger>
+                <TooltipContent side="right" align="center">
+                  {expandLabel}
+                </TooltipContent>
+              </Tooltip>
+            ) : (
+              <SidebarTrigger className="-ml-1" />
+            )
+          )}
+          {!collapsed && (
+            <Link to="/" onClick={handleLinkClick} className="flex items-center gap-3 flex-1">
+              <span className="text-base font-medium">{siteName}</span>
+            </Link>
+          )}
         </div>
       </SidebarHeader>
-      <SidebarContent className="md:pb-4">
+      <SidebarContent className="md:pb-4 group-data-[state=collapsed]/sidebar:px-2">
         {isMobile ? (
           <>
             {extraContent != null && (
@@ -296,7 +340,7 @@ export function AppSidebar({
         )}
       </SidebarContent>
       {!isMobile && (
-        <SidebarFooter className="h-auto w-full flex-col items-stretch gap-1 py-2 px-2 md:px-3">
+        <SidebarFooter className="h-auto w-full flex-col items-stretch gap-1 py-2 px-2 md:px-3 group-data-[state=collapsed]/sidebar:px-2">
           {themeMenu}
           {languageMenu}
         </SidebarFooter>
