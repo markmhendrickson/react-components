@@ -28,7 +28,7 @@
     "build": "tsc",
     "type-check": "tsc --noEmit",
     "lint": "eslint src --ext .ts,.tsx",
-    "test": "echo \"No tests specified yet\"",
+    "test": "tsx --test scripts/*.test.mjs",
     "prepublishOnly": "npm run build"
   },
   "keywords": [
@@ -64,6 +64,7 @@
     "eslint-plugin-react-hooks": "^4.6.0",
     "lucide-react": "^0.400.0",
     "react-router-dom": "^6.30.3",
+    "tsx": "^4.23.15",
     "typescript": "^5.0.0"
   },
   "dependencies": {

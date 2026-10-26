@@ -151,7 +151,7 @@ export function AppSidebar({
           return (
             <SidebarMenuItem key={item.path}>
               <SidebarMenuButton asChild isActive={isActive(item.path)} tooltip={item.label}>
-                <Link to={item.path} onClick={handleLinkClick}>
+                <Link to={item.path} onClick={handleLinkClick} aria-label={item.label}>
                   {Icon && (
                     <span className="flex shrink-0 text-sidebar-foreground [&>svg]:size-5 [&>svg]:fill-none [&>svg]:stroke-current md:[&>svg]:size-4">
                       <Icon aria-hidden />
