@@ -59,6 +59,17 @@ export interface LayoutProps {
   hiddenPathSegments?: string[]
   /** Full-width block below main content (e.g. site footer band) */
   footer?: React.ReactNode
+  /** Whether the desktop sidebar starts expanded (default true). A saved user preference wins. */
+  defaultSidebarOpen?: boolean
+  /**
+   * Desktop collapse behaviour. 'offcanvas' (default) hides the sidebar entirely when collapsed;
+   * 'icon' keeps a narrow icon rail whose items show their names in tooltips.
+   */
+  sidebarCollapsible?: 'offcanvas' | 'icon'
+  /** Label for the first breadcrumb while the sidebar is collapsed (for example the site name). */
+  collapsedHomeLabel?: string
+  /** Tooltip for the icon rail's expand button. */
+  sidebarExpandLabel?: string
 }
 
 /**
@@ -85,6 +96,10 @@ export function Layout({
   homeLabel = 'Home',
   hiddenPathSegments = [],
   footer,
+  defaultSidebarOpen = true,
+  sidebarCollapsible = 'offcanvas',
+  collapsedHomeLabel,
+  sidebarExpandLabel,
 }: LayoutProps) {
   const isRtl = direction === 'rtl'
   const location = useLocation()
@@ -252,7 +267,7 @@ export function Layout({
 
   return (
     <div dir={direction}>
-      <SidebarProvider defaultOpen={true}>
+      <SidebarProvider defaultOpen={defaultSidebarOpen}>
         <AppSidebar
           siteName={siteName || ''}
           direction={direction}
@@ -265,11 +280,19 @@ export function Layout({
           themeSystem={themeSystem}
           themeLight={themeLight}
           themeDark={themeDark}
+          collapsible={sidebarCollapsible}
+          expandLabel={sidebarExpandLabel}
         />
         <SidebarOverlay />
         <MobileMenuFab direction={direction} />
-        <SidebarInset side={isRtl ? 'right' : 'left'} className="min-w-0 max-w-full overflow-x-hidden">
-          <PageHeader breadcrumbs={breadcrumbs} headerRight={headerRight} direction={direction} />
+        <SidebarInset side={isRtl ? 'right' : 'left'} collapsible={sidebarCollapsible} className="min-w-0 max-w-full overflow-x-hidden">
+          <PageHeader
+            breadcrumbs={breadcrumbs}
+            headerRight={headerRight}
+            direction={direction}
+            sidebarCollapsible={sidebarCollapsible}
+            collapsedHomeLabel={collapsedHomeLabel}
+          />
           <div
             className={cn(
               'flex flex-1 flex-col min-w-0 max-w-full overflow-x-hidden min-h-[calc(100vh-var(--header-height,4rem))]',
@@ -319,35 +342,41 @@ interface PageHeaderProps {
   breadcrumbs: BreadcrumbItem[]
   headerRight?: React.ReactNode
   direction: 'ltr' | 'rtl'
+  sidebarCollapsible: 'offcanvas' | 'icon'
+  collapsedHomeLabel?: string
 }
 
-function PageHeader({ breadcrumbs, headerRight, direction }: PageHeaderProps) {
+function PageHeader({ breadcrumbs, headerRight, direction, sidebarCollapsible, collapsedHomeLabel }: PageHeaderProps) {
   const { open, isMobile } = useSidebar()
   const isRtl = direction === 'rtl'
 
   return (
     <header className="sticky top-0 z-30 flex h-[var(--header-height,4rem)] items-center gap-4 border-b bg-background px-4 min-w-0 max-w-full overflow-x-hidden">
       {/* Desktop: show trigger in header when sidebar is closed; mobile uses fixed FAB */}
-      {!isMobile && !open && <SidebarTrigger className="-ml-1 shrink-0" aria-label="Open menu" />}
+      {!isMobile && !open && sidebarCollapsible !== 'icon' && <SidebarTrigger className="-ml-1 shrink-0" aria-label="Open menu" />}
       <Breadcrumb className="min-w-0 flex-1 overflow-hidden max-w-full">
         <BreadcrumbList className="flex-nowrap min-w-0 max-w-full">
-          {breadcrumbs.map((crumb, index) => (
+          {breadcrumbs.map((crumb, index) => {
+            // While the sidebar is collapsed its site name is hidden, so the first crumb carries it.
+            const label = index === 0 && !open && collapsedHomeLabel ? collapsedHomeLabel : crumb.label
+            return (
             <React.Fragment key={crumb.href}>
               <BreadcrumbItem className={cn(
                 "min-w-0",
                 index === breadcrumbs.length - 1 ? "flex-1 min-w-0" : "shrink-0"
               )}>
                 {crumb.isLast ? (
-                  <BreadcrumbPage className="truncate block w-full">{crumb.label}</BreadcrumbPage>
+                  <BreadcrumbPage className="truncate block w-full">{label}</BreadcrumbPage>
                 ) : (
                   <BreadcrumbLink asChild>
-                    <Link to={crumb.href} className="truncate whitespace-nowrap">{crumb.label}</Link>
+                    <Link to={crumb.href} className="truncate whitespace-nowrap">{label}</Link>
                   </BreadcrumbLink>
                 )}
               </BreadcrumbItem>
               {index < breadcrumbs.length - 1 && <BreadcrumbSeparator className="shrink-0" />}
             </React.Fragment>
-          ))}
+            )
+          })}
         </BreadcrumbList>
       </Breadcrumb>
       {headerRight != null && (
