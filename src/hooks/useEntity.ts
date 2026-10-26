@@ -1,11 +1,11 @@
 import { useQuery } from '@tanstack/react-query'
 import { getEntity, getEntityRelationships } from '../api/entities'
 
-export function useEntity(id: string | undefined) {
+export function useEntity(id: string | undefined, enabled = true) {
   return useQuery({
     queryKey: ['entity', id],
     queryFn: () => getEntity(id!),
-    enabled: !!id,
+    enabled: !!id && enabled,
     staleTime: 60_000,
   })
 }

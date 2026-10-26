@@ -30,6 +30,7 @@ export interface AppSidebarProps {
   extraContent?: React.ReactNode
   languageMenuItems?: LanguageMenuItem[]
   languageMenuLabel?: string
+  languageMenuAriaLabel?: string
   /** Theme menu labels (for i18n) */
   themeMenuLabel?: string
   themeMenuAriaLabel?: string
@@ -43,6 +44,8 @@ export interface AppSidebarProps {
   collapsible?: 'offcanvas' | 'icon'
   /** Tooltip for the rail's expand button (icon mode). */
   expandLabel?: string
+  /** Name of the expanded sidebar's collapse/toggle control. */
+  toggleLabel?: string
 }
 
 export interface LanguageMenuItem {
@@ -69,6 +72,7 @@ export function AppSidebar({
   extraContent,
   languageMenuItems = [],
   languageMenuLabel = 'Language',
+  languageMenuAriaLabel = 'Toggle language menu',
   themeMenuLabel = 'Theme',
   themeMenuAriaLabel = 'Toggle theme menu',
   themeSystem = 'System',
@@ -76,6 +80,7 @@ export function AppSidebar({
   themeDark = 'Dark',
   collapsible = 'offcanvas',
   expandLabel = 'Expand sidebar',
+  toggleLabel = 'Toggle sidebar',
 }: AppSidebarProps) {
   const isRtl = direction === 'rtl'
   const location = useLocation()
@@ -151,7 +156,7 @@ export function AppSidebar({
           return (
             <SidebarMenuItem key={item.path}>
               <SidebarMenuButton asChild isActive={isActive(item.path)} tooltip={item.label}>
-                <Link to={item.path} onClick={handleLinkClick}>
+                <Link to={item.path} onClick={handleLinkClick} aria-label={item.label}>
                   {Icon && (
                     <span className="flex shrink-0 text-sidebar-foreground [&>svg]:size-5 [&>svg]:fill-none [&>svg]:stroke-current md:[&>svg]:size-4">
                       <Icon aria-hidden />
@@ -185,7 +190,7 @@ export function AppSidebar({
                 setLanguageMenuOpen((prev) => !prev)
               }}
               aria-expanded={languageMenuOpen && !collapsed}
-              aria-label="Toggle language menu"
+              aria-label={languageMenuAriaLabel}
             >
               <span className="flex shrink-0 text-sidebar-foreground [&>svg]:size-5 [&>svg]:fill-none [&>svg]:stroke-current md:[&>svg]:size-4">
                 <Languages aria-hidden />
@@ -308,7 +313,7 @@ export function AppSidebar({
                 </TooltipContent>
               </Tooltip>
             ) : (
-              <SidebarTrigger className="-ml-1" />
+              <SidebarTrigger className="-ml-1" aria-label={toggleLabel} />
             )
           )}
           {!collapsed && (
