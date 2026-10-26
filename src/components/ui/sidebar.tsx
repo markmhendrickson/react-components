@@ -526,7 +526,7 @@ const SidebarTrigger = React.forwardRef<HTMLButtonElement, React.ButtonHTMLAttri
         {...props}
       >
         <PanelLeft className="size-5 md:size-4" />
-        <span className="sr-only">Toggle sidebar</span>
+        <span className="sr-only">{props["aria-label"] ?? "Toggle sidebar"}</span>
       </button>
     )
   }
@@ -534,7 +534,7 @@ const SidebarTrigger = React.forwardRef<HTMLButtonElement, React.ButtonHTMLAttri
 SidebarTrigger.displayName = "SidebarTrigger"
 
 // SidebarOverlay: backdrop on mobile when sidebar is open; tap or Escape to close
-const SidebarOverlay: React.FC = () => {
+const SidebarOverlay: React.FC<{ closeLabel?: string }> = ({ closeLabel = "Close sidebar" }) => {
   const { isMobile, open, setOpen } = useSidebar()
   React.useEffect(() => {
     if (!isMobile || !open) return
@@ -549,7 +549,7 @@ const SidebarOverlay: React.FC = () => {
     <div
       role="button"
       tabIndex={-1}
-      aria-label="Close sidebar"
+      aria-label={closeLabel}
       className="fixed inset-0 z-30 bg-black/50 md:hidden"
       onClick={() => setOpen(false)}
     />

@@ -41,6 +41,7 @@ export interface LayoutProps {
   menuItems?: MenuItem[]
   languageMenuItems?: LanguageMenuItem[]
   languageMenuLabel?: string
+  languageMenuAriaLabel?: string
   themeMenuLabel?: string
   themeMenuAriaLabel?: string
   themeSystem?: string
@@ -70,6 +71,9 @@ export interface LayoutProps {
   collapsedHomeLabel?: string
   /** Tooltip for the icon rail's expand button. */
   sidebarExpandLabel?: string
+  sidebarToggleLabel?: string
+  sidebarOpenLabel?: string
+  sidebarCloseLabel?: string
 }
 
 /**
@@ -82,6 +86,7 @@ export function Layout({
   menuItems = [],
   languageMenuItems = [],
   languageMenuLabel,
+  languageMenuAriaLabel,
   themeMenuLabel,
   themeMenuAriaLabel,
   themeSystem,
@@ -100,6 +105,9 @@ export function Layout({
   sidebarCollapsible = 'offcanvas',
   collapsedHomeLabel,
   sidebarExpandLabel,
+  sidebarToggleLabel = 'Toggle sidebar',
+  sidebarOpenLabel = 'Open menu',
+  sidebarCloseLabel = 'Close sidebar',
 }: LayoutProps) {
   const isRtl = direction === 'rtl'
   const location = useLocation()
@@ -275,6 +283,7 @@ export function Layout({
           extraContent={sidebarExtra}
           languageMenuItems={languageMenuItems}
           languageMenuLabel={languageMenuLabel}
+          languageMenuAriaLabel={languageMenuAriaLabel}
           themeMenuLabel={themeMenuLabel}
           themeMenuAriaLabel={themeMenuAriaLabel}
           themeSystem={themeSystem}
@@ -282,9 +291,10 @@ export function Layout({
           themeDark={themeDark}
           collapsible={sidebarCollapsible}
           expandLabel={sidebarExpandLabel}
+          toggleLabel={sidebarToggleLabel}
         />
-        <SidebarOverlay />
-        <MobileMenuFab direction={direction} />
+        <SidebarOverlay closeLabel={sidebarCloseLabel} />
+        <MobileMenuFab direction={direction} openLabel={sidebarOpenLabel} />
         <SidebarInset side={isRtl ? 'right' : 'left'} collapsible={sidebarCollapsible} className="min-w-0 max-w-full overflow-x-hidden">
           <PageHeader
             breadcrumbs={breadcrumbs}
@@ -292,6 +302,7 @@ export function Layout({
             direction={direction}
             sidebarCollapsible={sidebarCollapsible}
             collapsedHomeLabel={collapsedHomeLabel}
+            sidebarOpenLabel={sidebarOpenLabel}
           />
           <div
             className={cn(
@@ -318,7 +329,7 @@ export function Layout({
  * Fixed menu button at bottom-right on mobile only. Opens sidebar from the right.
  * Bottom inset matches right (1.5rem / right-6) for equal corner spacing; respects safe-area when set.
  */
-function MobileMenuFab({ direction }: { direction: 'ltr' | 'rtl' }) {
+function MobileMenuFab({ direction, openLabel }: { direction: 'ltr' | 'rtl'; openLabel: string }) {
   const { isMobile } = useSidebar()
   if (!isMobile) return null
   const isRtl = direction === 'rtl'
@@ -329,7 +340,7 @@ function MobileMenuFab({ direction }: { direction: 'ltr' | 'rtl' }) {
     >
       <SidebarTrigger
         className="flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg hover:!bg-primary hover:!text-primary-foreground active:!bg-primary active:!text-primary-foreground focus-visible:ring-2 focus-visible:ring-ring"
-        aria-label="Open menu"
+        aria-label={openLabel}
       />
     </div>
   )
@@ -344,16 +355,17 @@ interface PageHeaderProps {
   direction: 'ltr' | 'rtl'
   sidebarCollapsible: 'offcanvas' | 'icon'
   collapsedHomeLabel?: string
+  sidebarOpenLabel: string
 }
 
-function PageHeader({ breadcrumbs, headerRight, direction, sidebarCollapsible, collapsedHomeLabel }: PageHeaderProps) {
+function PageHeader({ breadcrumbs, headerRight, direction, sidebarCollapsible, collapsedHomeLabel, sidebarOpenLabel }: PageHeaderProps) {
   const { open, isMobile } = useSidebar()
   const isRtl = direction === 'rtl'
 
   return (
     <header className="sticky top-0 z-30 flex h-[var(--header-height,4rem)] items-center gap-4 border-b bg-background px-4 min-w-0 max-w-full overflow-x-hidden">
       {/* Desktop: show trigger in header when sidebar is closed; mobile uses fixed FAB */}
-      {!isMobile && !open && sidebarCollapsible !== 'icon' && <SidebarTrigger className="-ml-1 shrink-0" aria-label="Open menu" />}
+      {!isMobile && !open && sidebarCollapsible !== 'icon' && <SidebarTrigger className="-ml-1 shrink-0" aria-label={sidebarOpenLabel} />}
       <Breadcrumb className="min-w-0 flex-1 overflow-hidden max-w-full">
         <BreadcrumbList className="flex-nowrap min-w-0 max-w-full">
           {breadcrumbs.map((crumb, index) => {
